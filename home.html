@@ -9,8 +9,15 @@
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <style type="text/tailwindcss">
       :root {
-        --c-gold: #c5a87b;
+        --c-gold: #d4af37;
         --c-night-blue: #0c142c;
+                --background-color: #000000;
+        --text-color: #ffffff;
+      }
+      .shadow-xl {
+    --tw-shadow: 0px 0px 25px -5px #d4af37, 0 8px 10px -6px #d4af37;
+    --tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
       }
       body {
         font-family: 'Poppins', sans-serif;
@@ -26,7 +33,7 @@
       }
     </style>
 </head>
-<body class="bg-white text-gray-800">
+<body class="bg-[var(--background-color)] text-[var(--text-color)]">
 <div class="relative flex min-h-screen flex-col overflow-x-hidden">
 <header class="absolute top-0 left-0 z-10 w-full px-10 py-5">
 <div class="mx-auto flex max-w-7xl items-center justify-between">
@@ -63,11 +70,11 @@
 </a>
 </div>
 </section>
-<section class="bg-white py-20 sm:py-28">
+<section class=" py-20 sm:py-28">
 <div class="mx-auto max-w-7xl px-6 lg:px-8">
 <div class="mx-auto max-w-2xl text-center">
-<h2 class="font-serif text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">Un'Esperienza Indimenticabile</h2>
-<p class="mt-6 text-lg leading-8 text-gray-600">
+<h2 class="font-serif text-4xl font-bold tracking-tight text-[var(--c-gold)] sm:text-5xl">Un'Esperienza Indimenticabile</h2>
+<p class="mt-6 text-lg leading-8 text-white-600">
                 Situata in un contesto idilliaco, Villa Paradiso offre un'esperienza indimenticabile, perfetta per una vacanza da sogno. Scopri la bellezza dei nostri spazi, curati in
                 ogni dettaglio per garantirti il massimo relax.
               </p>
@@ -84,7 +91,7 @@
 </div>
 </div>
 <div class="mt-16 flex justify-center">
-<a class="flex min-w-[150px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-8 bg-[var(--c-night-blue)] text-white text-base font-bold transition-transform hover:scale-105" href="#">
+<a class="flex min-w-[150px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-8 bg-[var(--c-gold)] text-black text-base font-bold transition-transform hover:scale-105" href="#">
 <span class="truncate">Scopri di più</span>
 </a>
 </div>

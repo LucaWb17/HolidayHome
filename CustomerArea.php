@@ -59,7 +59,63 @@ include 'php/header.php';
                 </div>
             </div>
         </div>
+
+        <!-- Change Password Section -->
+        <div class="mt-16">
+            <div class="bg-black/20 p-8 rounded-xl backdrop-blur-sm">
+                <h4 class="text-3xl font-bold mb-6 text-[var(--c-gold)] font-serif">Cambia Password</h4>
+                <div id="change-password-message" class="text-center mb-4 text-white"></div>
+                <form id="change-password-form" class="space-y-6 max-w-lg mx-auto">
+                    <div>
+                        <label for="current_password" class="block text-sm font-medium text-white">Password Attuale</label>
+                        <input type="password" name="current_password" id="current_password" required class="mt-1 block w-full rounded-md border-gray-300 bg-white/20 text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label for="new_password" class="block text-sm font-medium text-white">Nuova Password</label>
+                        <input type="password" name="new_password" id="new_password" required class="mt-1 block w-full rounded-md border-gray-300 bg-white/20 text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label for="confirm_password" class="block text-sm font-medium text-white">Conferma Nuova Password</label>
+                        <input type="password" name="confirm_password" id="confirm_password" required class="mt-1 block w-full rounded-md border-gray-300 bg-white/20 text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-full shadow-sm text-sm font-bold text-black bg-[var(--c-gold-bright)] hover:bg-[var(--c-gold)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--c-gold)] transition-all">
+                            Cambia Password
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </main>
+
+<script>
+document.getElementById('change-password-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+    const messageDiv = document.getElementById('change-password-message');
+
+    fetch('php/change_password.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        messageDiv.textContent = data.message;
+        if (data.status === 'success') {
+            messageDiv.className = 'text-center mb-4 text-green-400';
+            form.reset();
+        } else {
+            messageDiv.className = 'text-center mb-4 text-red-400';
+        }
+    })
+    .catch(error => {
+        messageDiv.className = 'text-center mb-4 text-red-400';
+        messageDiv.textContent = 'An error occurred. Please try again.';
+        console.error('Error:', error);
+    });
+});
+</script>
 
 <?php include 'php/footer.php'; ?>

@@ -1,0 +1,22 @@
+/* Custom styles for the mobile menu animation */
+#mobile-menu {
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    transform: translateY(-10px);
+    opacity: 0;
+    pointer-events: none;
+}
+
+#mobile-menu:not(.hidden) {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Additional responsive adjustments if needed */
+@media (max-width: 768px) {
+    /* Example: Adjust padding on main content for smaller screens */
+    main {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}

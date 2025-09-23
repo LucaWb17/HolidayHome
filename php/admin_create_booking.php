@@ -3,8 +3,15 @@ require_once 'config.php';
 
 $response = ['status' => 'error', 'message' => 'An unknown error occurred.'];
 
+// Ensure user is logged in and is an admin
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || $_SESSION['role'] !== 'admin') {
+    $response['message'] = 'Unauthorized action.';
+    header('Content-Type: application/json');
+    echo json_encode($response);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Basic validation
     if (isset($_POST['name'], $_POST['email'], $_POST['check_in'], $_POST['check_out'], $_POST['guests'])) {
         $name = trim($_POST['name']);
         $email = trim($_POST['email']);
@@ -19,17 +26,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif (strtotime($check_in) >= strtotime($check_out)) {
             $response['message'] = 'Check-out date must be after the check-in date.';
         } else {
-            $user_id = isset($_SESSION['id']) ? $_SESSION['id'] : null;
-            $status = 'pending'; // Default status
+            // Check if the user exists, if not, user_id will be null
+            $user_id = null;
+            $stmt_user = $conn->prepare("SELECT id FROM users WHERE email = ?");
+            $stmt_user->bind_param("s", $email);
+            $stmt_user->execute();
+            $stmt_user->bind_result($found_user_id);
+            if ($stmt_user->fetch()) {
+                $user_id = $found_user_id;
+            }
+            $stmt_user->close();
+
+            // Admin-created bookings are confirmed by default
+            $status = 'confirmed';
 
             $stmt = $conn->prepare("INSERT INTO bookings (user_id, name, email, check_in, check_out, guests, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("isssssi", $user_id, $name, $email, $check_in, $check_out, $guests, $status);
+            $stmt->bind_param("issssis", $user_id, $name, $email, $check_in, $check_out, $guests, $status);
 
             if ($stmt->execute()) {
                 $response['status'] = 'success';
-                $response['message'] = 'Booking request sent successfully! We will contact you soon to confirm.';
+                $response['message'] = 'Booking created successfully!';
             } else {
-                $response['message'] = 'An error occurred while processing your booking. Please try again.';
+                $response['message'] = 'An error occurred while creating the booking.';
             }
             $stmt->close();
         }

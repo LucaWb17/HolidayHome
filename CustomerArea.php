@@ -60,6 +60,40 @@ include 'php/header.php';
             </div>
         </div>
 
+        <!-- My Messages Section -->
+        <div class="mt-16">
+            <div class="bg-black/20 p-8 rounded-xl backdrop-blur-sm">
+                <h3 class="text-4xl font-bold mb-8 font-serif">I Miei Messaggi</h3>
+                <div class="space-y-4 max-h-[500px] overflow-y-auto">
+                    <?php
+                        $user_id = $_SESSION['id'];
+                        $messages_stmt = $conn->prepare("SELECT * FROM messages WHERE receiver_id = ? ORDER BY timestamp DESC");
+                        $messages_stmt->bind_param("i", $user_id);
+                        $messages_stmt->execute();
+                        $messages_result = $messages_stmt->get_result();
+                        if ($messages_result->num_rows > 0):
+                            while($msg = $messages_result->fetch_assoc()):
+                    ?>
+                                <div class="p-4 rounded-lg bg-[#111722]">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <p class="font-bold text-white"><?php echo htmlspecialchars($msg['subject']); ?></p>
+                                        <span class="text-xs text-gray-400"><?php echo date("d/m/Y H:i", strtotime($msg['timestamp'])); ?></span>
+                                    </div>
+                                    <p class="text-gray-300"><?php echo nl2br(htmlspecialchars($msg['body'])); ?></p>
+                                </div>
+                            <?php
+                            endwhile;
+                        else:
+                    ?>
+                        <p class="text-gray-400 text-center">Non hai ricevuto nessun messaggio.</p>
+                    <?php
+                        endif;
+                        $messages_stmt->close();
+                    ?>
+                </div>
+            </div>
+        </div>
+
         <!-- Change Password Section -->
         <div class="mt-16">
             <div class="bg-black/20 p-8 rounded-xl backdrop-blur-sm">

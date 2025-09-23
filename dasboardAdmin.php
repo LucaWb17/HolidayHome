@@ -1,39 +1,59 @@
 <?php
 include 'php/config.php';
-
-// Authentication and Authorization
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || $_SESSION['role'] !== 'admin') {
-    header('Location: login.php');
-    exit;
-}
+// Note: admin_nav.php handles the session check and authorization.
 
 // Fetch all users from the database
 $result = $conn->query("SELECT id, name, email, role FROM users");
-
-include 'php/header.php';
 ?>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8"/>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&amp;family=Poppins:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <title>Admin Dashboard - Villa Paradiso</title>
+    <link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="css/style.css" rel="stylesheet"/>
+    <style type="text/tailwindcss">
+        :root {
+            --c-gold: #c5a87b;
+            --c-gold-bright: #e6c589;
+            --c-night-blue: #0c142c;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6, .font-serif {
+            font-family: 'Cormorant Garamond', serif;
+        }
+    </style>
+</head>
+<body class="bg-[#111722]">
+<div class="relative flex size-full min-h-screen flex-col overflow-x-hidden">
+    <div class="flex h-full grow">
+        <?php include 'php/admin_nav.php'; ?>
+        <main class="flex-1 bg-[#111722] p-8">
+            <h2 class="text-3xl font-bold text-white mb-2 font-serif">Gestione Utenti</h2>
+            <p class="text-gray-400 mb-8">Visualizza e gestisci gli utenti registrati.</p>
 
-<main class="flex-1 px-10 py-12 md:px-20 lg:px-40 bg-gray-900 text-white">
-    <div class="mx-auto max-w-7xl pt-20">
-        <h2 class="text-5xl font-bold mb-8 font-serif">Pannello di Amministrazione</h2>
-
-        <!-- User Management -->
-        <div class="bg-black/20 p-8 rounded-xl backdrop-blur-sm">
-            <h3 class="text-3xl font-bold mb-6 text-[var(--c-gold)] font-serif">Gestione Utenti</h3>
-            <div class="overflow-x-auto">
+            <div class="bg-[#192233] rounded-lg border border-[#324467] overflow-x-auto">
                 <table class="w-full text-left text-sm text-gray-300">
-                    <thead class="text-xs text-white uppercase bg-white/10">
+                    <thead class="text-xs text-white uppercase bg-[#232f48]">
                         <tr>
-                            <th class="px-6 py-3">ID Utente</th>
+                            <th class="px-6 py-3">ID</th>
                             <th class="px-6 py-3">Nome</th>
                             <th class="px-6 py-3">Email</th>
                             <th class="px-6 py-3">Ruolo</th>
+                            <th class="px-6 py-3">Azioni</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php if ($result->num_rows > 0): ?>
+                        <?php if ($result && $result->num_rows > 0): ?>
                             <?php while($row = $result->fetch_assoc()): ?>
-                                <tr class="border-b border-white/10 hover:bg-white/5">
+                                <tr class="border-b border-[#324467] hover:bg-[#232f48]">
                                     <td class="px-6 py-4"><?php echo htmlspecialchars($row['id']); ?></td>
                                     <td class="px-6 py-4 font-medium text-white"><?php echo htmlspecialchars($row['name']); ?></td>
                                     <td class="px-6 py-4"><?php echo htmlspecialchars($row['email']); ?></td>
@@ -42,45 +62,46 @@ include 'php/header.php';
                                             <?php echo htmlspecialchars($row['role']); ?>
                                         </span>
                                     </td>
+                                    <td class="px-6 py-4">
+                                        <a href="dasboardAdminComunicazioni.php?user_id=<?php echo $row['id']; ?>" class="text-[var(--c-gold)] hover:underline">Invia Messaggio</a>
+                                    </td>
                                 </tr>
                             <?php endwhile; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="4" class="text-center py-4">Nessun utente trovato.</td>
+                                <td colspan="5" class="text-center py-4">Nessun utente trovato.</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
             </div>
-        </div>
-
-        <!-- Change Password Section -->
-        <div class="mt-16 bg-black/20 p-8 rounded-xl backdrop-blur-sm">
-            <h3 class="text-3xl font-bold mb-6 text-[var(--c-gold)] font-serif">Cambia la Tua Password</h3>
-            <div id="change-password-message" class="text-center mb-4 text-white"></div>
-            <form id="change-password-form" class="space-y-6 max-w-lg mx-auto">
-                <div>
-                    <label for="current_password" class="block text-sm font-medium text-white">Password Attuale</label>
-                    <input type="password" name="current_password" id="current_password" required class="mt-1 block w-full rounded-md border-gray-300 bg-white/20 text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
-                </div>
-                <div>
-                    <label for="new_password" class="block text-sm font-medium text-white">Nuova Password</label>
-                    <input type="password" name="new_password" id="new_password" required class="mt-1 block w-full rounded-md border-gray-300 bg-white/20 text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
-                </div>
-                <div>
-                    <label for="confirm_password" class="block text-sm font-medium text-white">Conferma Nuova Password</label>
-                    <input type="password" name="confirm_password" id="confirm_password" required class="mt-1 block w-full rounded-md border-gray-300 bg-white/20 text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
-                </div>
-                <div>
-                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-full shadow-sm text-sm font-bold text-black bg-[var(--c-gold-bright)] hover:bg-[var(--c-gold)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--c-gold)] transition-all">
-                        Cambia Password
-                    </button>
-                </div>
-            </form>
-        </div>
+             <!-- Change Password Section -->
+            <div class="mt-10 bg-[#192233] p-8 rounded-lg border border-[#324467]">
+                <h3 class="text-2xl font-bold mb-6 text-white font-serif">Cambia la Tua Password</h3>
+                <div id="change-password-message" class="text-center mb-4 text-white"></div>
+                <form id="change-password-form" class="space-y-6 max-w-lg mx-auto">
+                    <div>
+                        <label for="current_password" class="block text-sm font-medium text-white">Password Attuale</label>
+                        <input type="password" name="current_password" id="current_password" required class="mt-1 block w-full rounded-md border-gray-500 bg-[#111722] text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label for="new_password" class="block text-sm font-medium text-white">Nuova Password</label>
+                        <input type="password" name="new_password" id="new_password" required class="mt-1 block w-full rounded-md border-gray-500 bg-[#111722] text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label for="confirm_password" class="block text-sm font-medium text-white">Conferma Nuova Password</label>
+                        <input type="password" name="confirm_password" id="confirm_password" required class="mt-1 block w-full rounded-md border-gray-500 bg-[#111722] text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-full shadow-sm text-sm font-bold text-black bg-[var(--c-gold-bright)] hover:bg-[var(--c-gold)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--c-gold)] transition-all">
+                            Aggiorna Password
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
     </div>
-</main>
-
+</div>
 <script>
 document.getElementById('change-password-form').addEventListener('submit', function(e) {
     e.preventDefault();
@@ -109,8 +130,8 @@ document.getElementById('change-password-form').addEventListener('submit', funct
     });
 });
 </script>
-
+</body>
+</html>
 <?php
 $conn->close();
-include 'php/footer.php';
 ?>

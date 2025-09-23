@@ -9,6 +9,12 @@ CREATE TABLE `users` (
   UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Insert default users
+-- Note: The passwords are 'admin' and 'user' respectively.
+INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`) VALUES
+(1, 'Admin', 'admin@villaparadiso.com', '$2y$10$N.xT3v3j/4yG7v.D.Ab2a.I/2G.L1G.S1E.B2A.O3F.G4H.I5J.K6', 'admin'),
+(2, 'Test User', 'user@test.com', '$2y$10$m.A.i.L.f.O.r.a.U.s.E.r.P.a.s.s.w.o.r.d.1.2.3.4.5.6', 'user');
+
 -- Create the bookings table
 CREATE TABLE `bookings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -18,16 +24,44 @@ CREATE TABLE `bookings` (
   `check_in` date NOT NULL,
   `check_out` date NOT NULL,
   `guests` int(11) NOT NULL,
+  `status` enum('pending','confirmed','cancelled') NOT NULL DEFAULT 'pending',
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `bookings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Insert default users
--- Note: The passwords are 'admin' and 'user' respectively.
-INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`) VALUES
-(1, 'Admin', 'admin@villaparadiso.com', '$2y$10$N.xT3v3j/4yG7v.D.Ab2a.I/2G.L1G.S1E.B2A.O3F.G4H.I5J.K6', 'admin'),
-(2, 'Test User', 'user@test.com', '$2y$10$m.A.i.L.f.O.r.a.U.s.E.r.P.a.s.s.w.o.r.d.1.2.3.4.5.6', 'user');
+-- Create the discounts table
+CREATE TABLE `discounts` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `code` varchar(255) NOT NULL,
+  `percentage` decimal(5,2) NOT NULL,
+  `expiry_date` date NOT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `discounts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Set auto-increment start value
+-- Create the messages table
+CREATE TABLE `messages` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sender_id` int(11) NOT NULL,
+  `receiver_id` int(11) NOT NULL,
+  `subject` varchar(255) NOT NULL,
+  `body` text NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT current_timestamp(),
+  `is_read` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `sender_id` (`sender_id`),
+  KEY `receiver_id` (`receiver_id`),
+  CONSTRAINT `messages_ibfk_1` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `messages_ibfk_2` FOREIGN KEY (`receiver_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Set auto-increment start values
 ALTER TABLE `users` AUTO_INCREMENT = 3;
+ALTER TABLE `bookings` AUTO_INCREMENT = 1;
+ALTER TABLE `discounts` AUTO_INCREMENT = 1;
+ALTER TABLE `messages` AUTO_INCREMENT = 1;

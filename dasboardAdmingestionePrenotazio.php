@@ -29,9 +29,6 @@ $result = $conn->query("SELECT * FROM bookings ORDER BY id DESC");
         h1, h2, h3, h4, h5, h6, .font-serif {
             font-family: 'Cormorant Garamond', serif;
         }
-        .status-pending { background-color: #eab30833; color: #eab308; }
-        .status-confirmed { background-color: #22c55e33; color: #22c55e; }
-        .status-cancelled { background-color: #ef444433; color: #ef4444; }
     </style>
 </head>
 <body class="bg-[#111722]">
@@ -57,7 +54,16 @@ $result = $conn->query("SELECT * FROM bookings ORDER BY id DESC");
                     </thead>
                     <tbody>
                         <?php if ($result && $result->num_rows > 0): ?>
-                            <?php while($row = $result->fetch_assoc()): ?>
+                            <?php
+                            while($row = $result->fetch_assoc()):
+                                $status = trim(strtolower($row['status']));
+                                $status_classes = [
+                                    'pending' => 'bg-yellow-500/30 text-yellow-400',
+                                    'confirmed' => 'bg-green-500/30 text-green-400',
+                                    'cancelled' => 'bg-red-500/30 text-red-400',
+                                ];
+                                $status_class = $status_classes[$status] ?? 'bg-gray-500/30 text-gray-400';
+                            ?>
                                 <tr id="booking-row-<?php echo $row['id']; ?>" class="border-b border-[#324467] hover:bg-[#232f48]">
                                     <td class="px-6 py-4"><?php echo htmlspecialchars($row['id']); ?></td>
                                     <td class="px-6 py-4 font-medium text-white"><?php echo htmlspecialchars($row['name']); ?></td>
@@ -65,12 +71,12 @@ $result = $conn->query("SELECT * FROM bookings ORDER BY id DESC");
                                     <td class="px-6 py-4"><?php echo htmlspecialchars($row['check_in']) . ' - ' . htmlspecialchars($row['check_out']); ?></td>
                                     <td class="px-6 py-4 text-center"><?php echo htmlspecialchars($row['guests']); ?></td>
                                     <td class="px-6 py-4 text-center">
-                                        <span id="status-<?php echo $row['id']; ?>" class="px-2 py-1 text-xs font-semibold rounded-full status-<?php echo htmlspecialchars($row['status']); ?>">
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full <?php echo $status_class; ?>">
                                             <?php echo htmlspecialchars($row['status']); ?>
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-right">
-                                        <?php if ($row['status'] === 'pending'): ?>
+                                        <?php if ($status === 'pending'): ?>
                                             <button onclick="updateStatus(<?php echo $row['id']; ?>, 'confirmed')" class="text-green-400 hover:underline text-xs">Conferma</button>
                                             <button onclick="updateStatus(<?php echo $row['id']; ?>, 'cancelled')" class="text-red-400 hover:underline ml-2 text-xs">Cancella</button>
                                         <?php else: ?>

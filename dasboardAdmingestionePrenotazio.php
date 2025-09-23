@@ -1,203 +1,198 @@
-<html><head>
-<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
-<link as="style" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Manrope%3Awght%40400%3B500%3B700%3B800&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900" onload="this.rel='stylesheet'" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
-<title>Stitch Design</title>
-<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
-<meta charset="utf-8"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<style type="text/tailwindcss">
-      :root {
-        --night-blue: #0A0A22;
-        --dark-gold: #4a3e21;
-        --gold: #f9b006;
-        --soft-gold: #ccba8e;
-      }
-      body {
-        font-family: 'Manrope', 'Noto Sans', sans-serif;
-      }
-      .sidebar {
-        background-color: var(--night-blue);
-      }
-      .main-content {
-        background-color: #11112A;
-      }
-      .sidebar-link {
-        color: #E0E0E0;
-        transition: background-color 0.3s, color 0.3s;
-      }
-      .sidebar-link:hover, .sidebar-link.active {
-        background-color: var(--dark-gold);
-        color: white;
-      }
-      .sidebar-link.active {
-        background-color: var(--dark-gold)
-      }
-      .table-header {
-        background-color: #1A1A3A;
-      }
-      .table-row:nth-child(even) {
-        background-color: #14142D;
-      }
-      .table-row:nth-child(odd) {
-        background-color: #11112A;
-      }
-      .status-badge {
-        padding: 4px 12px;
-        border-radius: 9999px;
-        font-size: 0.875rem;
-        font-weight: 500;
-        text-transform: capitalize;
-      }
-      .status-in-attesa {
-        background-color: rgba(249, 176, 6, 0.1);
-        color: var(--gold);
-      }
-      .status-confermata {
-        background-color: rgba(6, 182, 212, 0.1);
-        color: #06B6D4;
-      }
-      .status-completata {
-        background-color: rgba(16, 185, 129, 0.1);
-        color: #10B981;
-      }
+<?php
+include 'php/config.php';
+// Note: admin_nav.php handles the session check and authorization.
+
+// Fetch all bookings from the database
+$result = $conn->query("SELECT * FROM bookings ORDER BY id DESC");
+?>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8"/>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&amp;family=Poppins:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <title>Admin Dashboard - Gestione Prenotazioni</title>
+    <link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="css/style.css" rel="stylesheet"/>
+    <style type="text/tailwindcss">
+        :root {
+            --c-gold: #c5a87b;
+            --c-gold-bright: #e6c589;
+            --c-night-blue: #0c142c;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6, .font-serif {
+            font-family: 'Cormorant Garamond', serif;
+        }
+        .status-pending { background-color: #eab30833; color: #eab308; }
+        .status-confirmed { background-color: #22c55e33; color: #22c55e; }
+        .status-cancelled { background-color: #ef444433; color: #ef4444; }
     </style>
 </head>
-<body class="bg-night-blue">
-<div class="flex min-h-screen">
-<aside class="w-64 sidebar flex flex-col text-white">
-<div class="p-6">
-<h1 class="text-2xl font-bold text-white">Luxury Stays</h1>
+<body class="bg-[#111722]">
+<div class="relative flex size-full min-h-screen flex-col overflow-x-hidden">
+    <div class="flex h-full grow">
+        <?php include 'php/admin_nav.php'; ?>
+        <main class="flex-1 bg-[#111722] p-8">
+            <h2 class="text-3xl font-bold text-white mb-2 font-serif">Gestione Prenotazioni</h2>
+            <p class="text-gray-400 mb-8">Visualizza, conferma o cancella le prenotazioni dei clienti.</p>
+            <div id="booking-message" class="text-center mb-4 text-white"></div>
+            <div class="bg-[#192233] rounded-lg border border-[#324467] overflow-x-auto">
+                <table class="w-full text-left text-sm text-gray-300">
+                    <thead class="text-xs text-white uppercase bg-[#232f48]">
+                        <tr>
+                            <th class="px-6 py-3">ID</th>
+                            <th class="px-6 py-3">Nome Cliente</th>
+                            <th class="px-6 py-3">Email</th>
+                            <th class="px-6 py-3">Date</th>
+                            <th class="px-6 py-3 text-center">Ospiti</th>
+                            <th class="px-6 py-3 text-center">Stato</th>
+                            <th class="px-6 py-3 text-right">Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if ($result && $result->num_rows > 0): ?>
+                            <?php while($row = $result->fetch_assoc()): ?>
+                                <tr id="booking-row-<?php echo $row['id']; ?>" class="border-b border-[#324467] hover:bg-[#232f48]">
+                                    <td class="px-6 py-4"><?php echo htmlspecialchars($row['id']); ?></td>
+                                    <td class="px-6 py-4 font-medium text-white"><?php echo htmlspecialchars($row['name']); ?></td>
+                                    <td class="px-6 py-4"><?php echo htmlspecialchars($row['email']); ?></td>
+                                    <td class="px-6 py-4"><?php echo htmlspecialchars($row['check_in']) . ' - ' . htmlspecialchars($row['check_out']); ?></td>
+                                    <td class="px-6 py-4 text-center"><?php echo htmlspecialchars($row['guests']); ?></td>
+                                    <td class="px-6 py-4 text-center">
+                                        <span id="status-<?php echo $row['id']; ?>" class="px-2 py-1 text-xs font-semibold rounded-full status-<?php echo htmlspecialchars($row['status']); ?>">
+                                            <?php echo htmlspecialchars($row['status']); ?>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <?php if ($row['status'] === 'pending'): ?>
+                                            <button onclick="updateStatus(<?php echo $row['id']; ?>, 'confirmed')" class="text-green-400 hover:underline text-xs">Conferma</button>
+                                            <button onclick="updateStatus(<?php echo $row['id']; ?>, 'cancelled')" class="text-red-400 hover:underline ml-2 text-xs">Cancella</button>
+                                        <?php else: ?>
+                                            <span class="text-gray-500 text-xs">Nessuna azione</span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="7" class="text-center py-4">Nessuna prenotazione trovata.</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
 </div>
-<nav class="flex-1 px-4 py-2 space-y-2">
-<a class="sidebar-link flex items-center gap-3 px-4 py-2 rounded-lg" href="#">
-<span class="material-symbols-outlined">dashboard</span>
-<span>Dashboard</span>
-</a>
-<a class="sidebar-link active flex items-center gap-3 px-4 py-2 rounded-lg" href="#">
-<span class="material-symbols-outlined">calendar_month</span>
-<span>Prenotazioni</span>
-</a>
-<a class="sidebar-link flex items-center gap-3 px-4 py-2 rounded-lg" href="#">
-<span class="material-symbols-outlined">apartment</span>
-<span>Proprietà</span>
-</a>
-<a class="sidebar-link flex items-center gap-3 px-4 py-2 rounded-lg" href="#">
-<span class="material-symbols-outlined">group</span>
-<span>Clienti</span>
-</a>
-<a class="sidebar-link flex items-center gap-3 px-4 py-2 rounded-lg" href="#">
-<span class="material-symbols-outlined">settings</span>
-<span>Impostazioni</span>
-</a>
-</nav>
-<div class="px-4 py-2 mt-auto">
-<a class="sidebar-link flex items-center gap-3 px-4 py-2 rounded-lg" href="#">
-<span class="material-symbols-outlined">help_outline</span>
-<span>Aiuto</span>
-</a>
-<a class="sidebar-link flex items-center gap-3 px-4 py-2 rounded-lg" href="#">
-<span class="material-symbols-outlined">call</span>
-<span>Contattaci</span>
-</a>
-</div>
-</aside>
-<main class="flex-1 main-content p-8">
-<div class="flex justify-between items-center mb-8">
-<div>
-<h2 class="text-4xl font-bold text-white">Gestione Prenotazioni</h2>
-<p class="text-soft-gold mt-2">Visualizza e gestisci tutte le richieste di prenotazione ricevute.</p>
-</div>
-<button class="bg-gold text-night-blue px-6 py-3 rounded-lg font-semibold flex items-center gap-2 hover:bg-yellow-400 transition-colors">
-<span class="material-symbols-outlined">add</span>
-            Nuova Prenotazione
-          </button>
-</div>
-<div class="border-b border-gray-700 mb-6">
-<nav aria-label="Tabs" class="flex space-x-8">
-<a class="text-gold border-b-2 border-gold px-1 pb-3 text-sm font-semibold" href="#">Tutte</a>
-<a class="text-gray-400 hover:text-white hover:border-gray-500 border-b-2 border-transparent px-1 pb-3 text-sm font-medium" href="#">In attesa</a>
-<a class="text-gray-400 hover:text-white hover:border-gray-500 border-b-2 border-transparent px-1 pb-3 text-sm font-medium" href="#">Confermate</a>
-<a class="text-gray-400 hover:text-white hover:border-gray-500 border-b-2 border-transparent px-1 pb-3 text-sm font-medium" href="#">Completate</a>
-</nav>
-</div>
-<div class="rounded-lg overflow-hidden border border-gray-700">
-<table class="w-full text-left text-white">
-<thead class="table-header">
-<tr>
-<th class="px-6 py-4 font-semibold" scope="col">ID Prenotazione</th>
-<th class="px-6 py-4 font-semibold" scope="col">Proprietà</th>
-<th class="px-6 py-4 font-semibold" scope="col">Cliente</th>
-<th class="px-6 py-4 font-semibold" scope="col">Date</th>
-<th class="px-6 py-4 font-semibold text-center" scope="col">Stato</th>
-<th class="px-6 py-4 font-semibold text-right" scope="col">Azioni</th>
-</tr>
-</thead>
-<tbody>
-<tr class="table-row border-t border-gray-700">
-<td class="px-6 py-5 whitespace-nowrap text-soft-gold">#12345</td>
-<td class="px-6 py-5 whitespace-nowrap font-medium text-white">Villa Serena</td>
-<td class="px-6 py-5 whitespace-nowrap text-soft-gold">Marco Rossi</td>
-<td class="px-6 py-5 whitespace-nowrap text-soft-gold">15/07/24 - 22/07/24</td>
-<td class="px-6 py-5 text-center">
-<span class="status-badge status-in-attesa">In attesa</span>
-</td>
-<td class="px-6 py-5 whitespace-nowrap text-right">
-<a class="text-gold hover:underline font-medium" href="#">Visualizza</a>
-</td>
-</tr>
-<tr class="table-row border-t border-gray-700">
-<td class="px-6 py-5 whitespace-nowrap text-soft-gold">#67890</td>
-<td class="px-6 py-5 whitespace-nowrap font-medium text-white">Chalet Alpino</td>
-<td class="px-6 py-5 whitespace-nowrap text-soft-gold">Giulia Bianchi</td>
-<td class="px-6 py-5 whitespace-nowrap text-soft-gold">01/08/24 - 08/08/24</td>
-<td class="px-6 py-5 text-center">
-<span class="status-badge status-confermata">Confermata</span>
-</td>
-<td class="px-6 py-5 whitespace-nowrap text-right">
-<a class="text-gold hover:underline font-medium" href="#">Visualizza</a>
-</td>
-</tr>
-<tr class="table-row border-t border-gray-700">
-<td class="px-6 py-5 whitespace-nowrap text-soft-gold">#11223</td>
-<td class="px-6 py-5 whitespace-nowrap font-medium text-white">Residenza sul Lago</td>
-<td class="px-6 py-5 whitespace-nowrap text-soft-gold">Luca Verdi</td>
-<td class="px-6 py-5 whitespace-nowrap text-soft-gold">10/09/24 - 17/09/24</td>
-<td class="px-6 py-5 text-center">
-<span class="status-badge status-completata">Completata</span>
-</td>
-<td class="px-6 py-5 whitespace-nowrap text-right">
-<a class="text-gold hover:underline font-medium" href="#">Visualizza</a>
-</td>
-</tr>
-<tr class="table-row border-t border-gray-700">
-<td class="px-6 py-5 whitespace-nowrap text-soft-gold">#44556</td>
-<td class="px-6 py-5 whitespace-nowrap font-medium text-white">Attico di Lusso</td>
-<td class="px-6 py-5 whitespace-nowrap text-soft-gold">Anna Ferrari</td>
-<td class="px-6 py-5 whitespace-nowrap text-soft-gold">05/10/24 - 12/10/24</td>
-<td class="px-6 py-5 text-center">
-<span class="status-badge status-in-attesa">In attesa</span>
-</td>
-<td class="px-6 py-5 whitespace-nowrap text-right">
-<a class="text-gold hover:underline font-medium" href="#">Visualizza</a>
-</td>
-</tr>
-<tr class="table-row border-t border-gray-700">
-<td class="px-6 py-5 whitespace-nowrap text-soft-gold">#77889</td>
-<td class="px-6 py-5 whitespace-nowrap font-medium text-white">Casale Toscano</td>
-<td class="px-6 py-5 whitespace-nowrap text-soft-gold">Davide Conti</td>
-<td class="px-6 py-5 whitespace-nowrap text-soft-gold">20/11/24 - 27/11/24</td>
-<td class="px-6 py-5 text-center">
-<span class="status-badge status-confermata">Confermata</span>
-</td>
-<td class="px-6 py-5 whitespace-nowrap text-right">
-<a class="text-gold hover:underline font-medium" href="#">Visualizza</a>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</main>
-</div>
+<script>
+function updateStatus(bookingId, newStatus) {
+    const messageDiv = document.getElementById('booking-message');
+    if (!confirm(`Sei sicuro di voler impostare lo stato su '${newStatus}' per questa prenotazione?`)) {
+        return;
+    }
 
-</body></html>
+    const formData = new FormData();
+    formData.append('booking_id', bookingId);
+    formData.append('new_status', newStatus);
+
+    fetch('php/update_booking_status.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        messageDiv.textContent = data.message;
+        if (data.status === 'success') {
+            messageDiv.className = 'text-center mb-4 text-green-400';
+            setTimeout(() => location.reload(), 1500); // Reload to see the change
+        } else {
+            messageDiv.className = 'text-center mb-4 text-red-400';
+        }
+    })
+    .catch(error => {
+        messageDiv.className = 'text-center mb-4 text-red-400';
+        messageDiv.textContent = 'An error occurred. Please try again.';
+        console.error('Error:', error);
+    });
+}
+</script>
+
+            <!-- Add new booking form -->
+            <div class="mt-10 bg-[#192233] p-8 rounded-lg border border-[#324467]">
+                <h3 class="text-2xl font-bold mb-6 text-white font-serif">Aggiungi Nuova Prenotazione</h3>
+                <div id="add-booking-message" class="text-center mb-4 text-white"></div>
+                <form id="add-booking-form" class="space-y-6 max-w-2xl mx-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-white">Nome Cliente</label>
+                            <input type="text" name="name" id="name" required class="mt-1 block w-full rounded-md border-gray-500 bg-[#111722] text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-white">Email Cliente</label>
+                            <input type="email" name="email" id="email" required class="mt-1 block w-full rounded-md border-gray-500 bg-[#111722] text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
+                        </div>
+                    </div>
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="check_in" class="block text-sm font-medium text-white">Data di Check-in</label>
+                            <input type="date" name="check_in" id="check_in" required class="mt-1 block w-full rounded-md border-gray-500 bg-[#111722] text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
+                        </div>
+                        <div>
+                            <label for="check_out" class="block text-sm font-medium text-white">Data di Check-out</label>
+                            <input type="date" name="check_out" id="check_out" required class="mt-1 block w-full rounded-md border-gray-500 bg-[#111722] text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
+                        </div>
+                    </div>
+                     <div>
+                        <label for="guests" class="block text-sm font-medium text-white">Numero di Ospiti</label>
+                        <input type="number" name="guests" id="guests" min="1" required class="mt-1 block w-full rounded-md border-gray-500 bg-[#111722] text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-full shadow-sm text-sm font-bold text-black bg-[var(--c-gold-bright)] hover:bg-[var(--c-gold)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--c-gold)] transition-all">
+                            Crea Prenotazione
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+</div>
+<script>
+document.getElementById('add-booking-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+    const messageDiv = document.getElementById('add-booking-message');
+
+    fetch('php/admin_create_booking.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        messageDiv.textContent = data.message;
+        if (data.status === 'success') {
+            messageDiv.className = 'text-center mb-4 text-green-400';
+            form.reset();
+            setTimeout(() => location.reload(), 1500); // Reload to see the new booking
+        } else {
+            messageDiv.className = 'text-center mb-4 text-red-400';
+        }
+    })
+    .catch(error => {
+        messageDiv.className = 'text-center mb-4 text-red-400';
+        messageDiv.textContent = 'An error occurred. Please try again.';
+        console.error('Error:', error);
+    });
+});
+</script>
+</body>
+</html>
+<?php
+$conn->close();
+?>

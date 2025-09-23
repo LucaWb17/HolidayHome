@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $status = 'pending'; // Default status
 
             $stmt = $conn->prepare("INSERT INTO bookings (user_id, name, email, check_in, check_out, guests, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("isssssi", $user_id, $name, $email, $check_in, $check_out, $guests, $status);
+            $stmt->bind_param("issssis", $user_id, $name, $email, $check_in, $check_out, $guests, $status);
 
             if ($stmt->execute()) {
                 $response['status'] = 'success';

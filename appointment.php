@@ -16,6 +16,8 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
 
 include 'php/header.php';
 ?>
+<!-- flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
 <main class="flex-1 px-10 py-12 md:px-20 lg:px-40 bg-gray-900 text-white">
     <div class="mx-auto max-w-3xl pt-20">
@@ -33,15 +35,12 @@ include 'php/header.php';
                     <input type="email" name="email" id="email" required class="mt-1 block w-full rounded-md border-gray-300 bg-white/20 text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50" value="<?php echo htmlspecialchars($email); ?>">
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="check_in" class="block text-sm font-medium text-white">Data di Check-in</label>
-                        <input type="date" name="check_in" id="check_in" required class="mt-1 block w-full rounded-md border-gray-300 bg-white/20 text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
-                    </div>
-                    <div>
-                        <label for="check_out" class="block text-sm font-medium text-white">Data di Check-out</label>
-                        <input type="date" name="check_out" id="check_out" required class="mt-1 block w-full rounded-md border-gray-300 bg-white/20 text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
-                    </div>
+                <div>
+                    <label for="date-range" class="block text-sm font-medium text-white">Periodo del Soggiorno</label>
+                    <input type="text" id="date-range" required class="mt-1 block w-full rounded-md border-gray-300 bg-white/20 text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50" placeholder="Seleziona le date...">
+                    <!-- Hidden inputs to store the actual dates for the form submission -->
+                    <input type="hidden" name="check_in" id="check_in">
+                    <input type="hidden" name="check_out" id="check_out">
                 </div>
 
                 <div>
@@ -59,31 +58,64 @@ include 'php/header.php';
     </div>
 </main>
 
+<!-- flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
-document.getElementById('booking-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const form = e.target;
-    const formData = new FormData(form);
-    const messageDiv = document.getElementById('message');
+document.addEventListener('DOMContentLoaded', function() {
+    // Fetch booked dates and initialize the calendar
+    fetch('php/get_booked_dates.php')
+        .then(response => response.json())
+        .then(bookedDates => {
+            flatpickr("#date-range", {
+                mode: "range",
+                dateFormat: "Y-m-d",
+                minDate: "today",
+                disable: bookedDates,
+                onChange: function(selectedDates, dateStr, instance) {
+                    if (selectedDates.length === 2) {
+                        document.getElementById('check_in').value = instance.formatDate(selectedDates[0], "Y-m-d");
+                        document.getElementById('check_out').value = instance.formatDate(selectedDates[1], "Y-m-d");
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error fetching booked dates:', error));
 
-    fetch('php/create_booking.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        messageDiv.textContent = data.message;
-        if (data.status === 'success') {
-            messageDiv.className = 'text-center mb-4 text-green-400';
-            form.reset();
-        } else {
+    // Handle form submission
+    document.getElementById('booking-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const form = e.target;
+        const formData = new FormData(form);
+        const messageDiv = document.getElementById('message');
+
+        // Basic validation for date fields
+        if (!formData.get('check_in') || !formData.get('check_out')) {
             messageDiv.className = 'text-center mb-4 text-red-400';
+            messageDiv.textContent = 'Per favore, seleziona un periodo di soggiorno valido.';
+            return;
         }
-    })
-    .catch(error => {
-        messageDiv.className = 'text-center mb-4 text-red-400';
-        messageDiv.textContent = 'An error occurred. Please try again.';
-        console.error('Error:', error);
+
+        fetch('php/create_booking.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            messageDiv.textContent = data.message;
+            if (data.status === 'success') {
+                messageDiv.className = 'text-center mb-4 text-green-400';
+                form.reset();
+                // We need to reload the page to get the new disabled dates for the calendar
+                setTimeout(() => location.reload(), 2000);
+            } else {
+                messageDiv.className = 'text-center mb-4 text-red-400';
+            }
+        })
+        .catch(error => {
+            messageDiv.className = 'text-center mb-4 text-red-400';
+            messageDiv.textContent = 'An error occurred. Please try again.';
+            console.error('Error:', error);
+        });
     });
 });
 </script>

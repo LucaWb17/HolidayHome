@@ -4,12 +4,13 @@ require_once 'config.php';
 $response = ['status' => 'error', 'message' => 'An unknown error occurred.'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['name'], $_POST['email'], $_POST['password'])) {
-        $name = $_POST['name'];
-        $email = $_POST['email'];
+    if (isset($_POST['name'], $_POST['email'], $_POST['password'], $_POST['phone'])) {
+        $name = trim($_POST['name']);
+        $email = trim($_POST['email']);
         $password = $_POST['password'];
+        $phone = trim($_POST['phone']);
 
-        if (empty($name) || empty($email) || empty($password)) {
+        if (empty($name) || empty($email) || empty($password) || empty($phone)) {
             $response['message'] = 'Please fill in all fields.';
         } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $response['message'] = 'Invalid email format.';
@@ -27,8 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
                 // Insert the new user
-                $stmt = $conn->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
-                $stmt->bind_param("sss", $name, $email, $hashed_password);
+                $stmt = $conn->prepare("INSERT INTO users (name, email, password, phone) VALUES (?, ?, ?, ?)");
+                $stmt->bind_param("ssss", $name, $email, $hashed_password, $phone);
 
                 if ($stmt->execute()) {
                     $response['status'] = 'success';

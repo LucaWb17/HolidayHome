@@ -26,30 +26,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif (strtotime($check_in) >= strtotime($check_out)) {
             $response['message'] = 'Check-out date must be after the check-in date.';
         } else {
-            // Check if the user exists, if not, user_id will be null
-            $user_id = null;
-            $stmt_user = $conn->prepare("SELECT id FROM users WHERE email = ?");
-            $stmt_user->bind_param("s", $email);
-            $stmt_user->execute();
-            $stmt_user->bind_result($found_user_id);
-            if ($stmt_user->fetch()) {
-                $user_id = $found_user_id;
-            }
-            $stmt_user->close();
+            // Check for overlapping bookings
+            $overlap_stmt = $conn->prepare("SELECT id FROM bookings WHERE status = 'confirmed' AND ? < check_out AND ? > check_in");
+            $overlap_stmt->bind_param("ss", $check_in, $check_out);
+            $overlap_stmt->execute();
+            $overlap_stmt->store_result();
 
-            // Admin-created bookings are confirmed by default
-            $status = 'confirmed';
-
-            $stmt = $conn->prepare("INSERT INTO bookings (user_id, name, email, check_in, check_out, guests, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("issssis", $user_id, $name, $email, $check_in, $check_out, $guests, $status);
-
-            if ($stmt->execute()) {
-                $response['status'] = 'success';
-                $response['message'] = 'Booking created successfully!';
+            if ($overlap_stmt->num_rows > 0) {
+                $response['message'] = 'Error: These dates overlap with an existing confirmed booking.';
+                $overlap_stmt->close();
             } else {
-                $response['message'] = 'An error occurred while creating the booking.';
+                $overlap_stmt->close();
+                // Check if the user exists, if not, user_id will be null
+                $user_id = null;
+                $stmt_user = $conn->prepare("SELECT id FROM users WHERE email = ?");
+                $stmt_user->bind_param("s", $email);
+                $stmt_user->execute();
+                $stmt_user->bind_result($found_user_id);
+                if ($stmt_user->fetch()) {
+                    $user_id = $found_user_id;
+                }
+                $stmt_user->close();
+
+                // Admin-created bookings are confirmed by default
+                $status = 'confirmed';
+
+                $stmt = $conn->prepare("INSERT INTO bookings (user_id, name, email, check_in, check_out, guests, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
+                $stmt->bind_param("issssis", $user_id, $name, $email, $check_in, $check_out, $guests, $status);
+
+                if ($stmt->execute()) {
+                    $response['status'] = 'success';
+                    $response['message'] = 'Booking created successfully!';
+                } else {
+                    $response['message'] = 'An error occurred while creating the booking.';
+                }
+                $stmt->close();
             }
-            $stmt->close();
         }
     } else {
         $response['message'] = 'Missing required booking information.';

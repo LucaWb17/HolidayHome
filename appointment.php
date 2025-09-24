@@ -18,6 +18,8 @@ include 'php/header.php';
 ?>
 <!-- flatpickr CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<!-- Italian locale for flatpickr -->
+<script src="https://npmcdn.com/flatpickr/dist/l10n/it.js"></script>
 
 <main class="flex-1 px-10 py-12 md:px-20 lg:px-40 bg-gray-900 text-white">
     <div class="mx-auto max-w-3xl pt-20">
@@ -70,6 +72,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 mode: "range",
                 dateFormat: "Y-m-d",
                 minDate: "today",
+                locale: "it", // Set Italian locale
                 disable: bookedDates,
                 onChange: function(selectedDates, dateStr, instance) {
                     if (selectedDates.length === 2) {

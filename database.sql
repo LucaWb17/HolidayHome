@@ -4,6 +4,7 @@ CREATE TABLE `users` (
   `name` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
+  `phone` varchar(20) DEFAULT NULL,
   `role` enum('user','admin') NOT NULL DEFAULT 'user',
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
@@ -11,9 +12,9 @@ CREATE TABLE `users` (
 
 -- Insert default users
 -- Note: The passwords are 'admin' and 'user' respectively.
-INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`) VALUES
-(1, 'Admin', 'admin@villaparadiso.com', '$2y$10$N.xT3v3j/4yG7v.D.Ab2a.I/2G.L1G.S1E.B2A.O3F.G4H.I5J.K6', 'admin'),
-(2, 'Test User', 'user@test.com', '$2y$10$m.A.i.L.f.O.r.a.U.s.E.r.P.a.s.s.w.o.r.d.1.2.3.4.5.6', 'user');
+INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `role`) VALUES
+(1, 'Admin', 'admin@villaparadiso.com', '$2y$10$N.xT3v3j/4yG7v.D.Ab2a.I/2G.L1G.S1E.B2A.O3F.G4H.I5J.K6', '1234567890', 'admin'),
+(2, 'Test User', 'user@test.com', '$2y$10$m.A.i.L.f.O.r.a.U.s.E.r.P.a.s.s.w.o.r.d.1.2.3.4.5.6', '0987654321', 'user');
 
 -- Create the bookings table
 CREATE TABLE `bookings` (
@@ -21,6 +22,7 @@ CREATE TABLE `bookings` (
   `user_id` int(11) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
+  `phone` varchar(20) DEFAULT NULL,
   `check_in` date NOT NULL,
   `check_out` date NOT NULL,
   `guests` int(11) NOT NULL,

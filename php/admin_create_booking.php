@@ -12,14 +12,15 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || $_SESSION
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['name'], $_POST['email'], $_POST['check_in'], $_POST['check_out'], $_POST['guests'])) {
+    if (isset($_POST['name'], $_POST['email'], $_POST['phone'], $_POST['check_in'], $_POST['check_out'], $_POST['guests'])) {
         $name = trim($_POST['name']);
         $email = trim($_POST['email']);
+        $phone = trim($_POST['phone']);
         $check_in = $_POST['check_in'];
         $check_out = $_POST['check_out'];
         $guests = filter_var($_POST['guests'], FILTER_VALIDATE_INT);
 
-        if (empty($name) || empty($email) || empty($check_in) || empty($check_out) || $guests === false || $guests < 1) {
+        if (empty($name) || empty($email) || empty($phone) || empty($check_in) || empty($check_out) || $guests === false || $guests < 1) {
             $response['message'] = 'Please fill in all fields correctly.';
         } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $response['message'] = 'Invalid email format.';
@@ -51,8 +52,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Admin-created bookings are confirmed by default
                 $status = 'confirmed';
 
-                $stmt = $conn->prepare("INSERT INTO bookings (user_id, name, email, check_in, check_out, guests, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
-                $stmt->bind_param("issssis", $user_id, $name, $email, $check_in, $check_out, $guests, $status);
+                $stmt = $conn->prepare("INSERT INTO bookings (user_id, name, email, phone, check_in, check_out, guests, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt->bind_param("isssssis", $user_id, $name, $email, $phone, $check_in, $check_out, $guests, $status);
 
                 if ($stmt->execute()) {
                     $response['status'] = 'success';

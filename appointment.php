@@ -3,13 +3,14 @@ include 'php/config.php';
 
 $name = '';
 $email = '';
+$phone = '';
 
 // If the user is logged in, pre-fill the form with their data
 if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
-    $stmt = $conn->prepare("SELECT name, email FROM users WHERE id = ?");
+    $stmt = $conn->prepare("SELECT name, email, phone FROM users WHERE id = ?");
     $stmt->bind_param("i", $_SESSION['id']);
     $stmt->execute();
-    $stmt->bind_result($name, $email);
+    $stmt->bind_result($name, $email, $phone);
     $stmt->fetch();
     $stmt->close();
 }
@@ -28,6 +29,11 @@ include 'php/header.php';
                 <div>
                     <label for="name" class="block text-sm font-medium text-white">Nome Completo</label>
                     <input type="text" name="name" id="name" required class="mt-1 block w-full rounded-md border-gray-300 bg-white/20 text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50" value="<?php echo htmlspecialchars($name); ?>">
+                </div>
+
+                <div>
+                    <label for="phone" class="block text-sm font-medium text-white">Numero di Telefono</label>
+                    <input type="tel" name="phone" id="phone" required class="mt-1 block w-full rounded-md border-gray-300 bg-white/20 text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50" value="<?php echo htmlspecialchars($phone); ?>">
                 </div>
 
                 <div>

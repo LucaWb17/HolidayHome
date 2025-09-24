@@ -8,10 +8,10 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
 }
 
 // Fetch user data from the database
-$stmt = $conn->prepare("SELECT name, email FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT name, email, phone FROM users WHERE id = ?");
 $stmt->bind_param("i", $_SESSION['id']);
 $stmt->execute();
-$stmt->bind_result($name, $email);
+$stmt->bind_result($name, $email, $phone);
 $stmt->fetch();
 $stmt->close();
 
@@ -42,6 +42,10 @@ include 'php/header.php';
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 border-b border-white/20 pb-4">
                             <p class="text-gray-300 font-semibold">Email</p>
                             <p class="col-span-2"><?php echo htmlspecialchars($email); ?></p>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 border-b border-white/20 pb-4">
+                            <p class="text-gray-300 font-semibold">Telefono</p>
+                            <p class="col-span-2"><?php echo htmlspecialchars($phone ?? 'N/A'); ?></p>
                         </div>
                     </div>
                 </div>

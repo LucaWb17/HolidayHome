@@ -45,7 +45,7 @@ $result = $conn->query("SELECT * FROM bookings ORDER BY id DESC");
                         <tr>
                             <th class="px-6 py-3">ID</th>
                             <th class="px-6 py-3">Nome Cliente</th>
-                            <th class="px-6 py-3">Email</th>
+                            <th class="px-6 py-3">Contatti</th>
                             <th class="px-6 py-3">Date</th>
                             <th class="px-6 py-3 text-center">Ospiti</th>
                             <th class="px-6 py-3 text-center">Stato</th>
@@ -67,7 +67,10 @@ $result = $conn->query("SELECT * FROM bookings ORDER BY id DESC");
                                 <tr id="booking-row-<?php echo $row['id']; ?>" class="border-b border-[#324467] hover:bg-[#232f48]">
                                     <td class="px-6 py-4"><?php echo htmlspecialchars($row['id']); ?></td>
                                     <td class="px-6 py-4 font-medium text-white"><?php echo htmlspecialchars($row['name']); ?></td>
-                                    <td class="px-6 py-4"><?php echo htmlspecialchars($row['email']); ?></td>
+                                    <td class="px-6 py-4">
+                                        <div><?php echo htmlspecialchars($row['email']); ?></div>
+                                        <div class="text-xs text-gray-400"><?php echo htmlspecialchars($row['phone'] ?? 'N/A'); ?></div>
+                                    </td>
                                     <td class="px-6 py-4"><?php echo htmlspecialchars($row['check_in']) . ' - ' . htmlspecialchars($row['check_out']); ?></td>
                                     <td class="px-6 py-4 text-center"><?php echo htmlspecialchars($row['guests']); ?></td>
                                     <td class="px-6 py-4 text-center">
@@ -92,6 +95,47 @@ $result = $conn->query("SELECT * FROM bookings ORDER BY id DESC");
                         <?php endif; ?>
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Add new booking form -->
+            <div class="mt-10 bg-[#192233] p-8 rounded-lg border border-[#324467]">
+                <h3 class="text-2xl font-bold mb-6 text-white font-serif">Aggiungi Nuova Prenotazione</h3>
+                <div id="add-booking-message" class="text-center mb-4 text-white"></div>
+                <form id="add-booking-form" class="space-y-6 max-w-2xl mx-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-white">Nome Cliente</label>
+                            <input type="text" name="name" id="name" required class="mt-1 block w-full rounded-md border-gray-500 bg-[#111722] text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-white">Email Cliente</label>
+                            <input type="email" name="email" id="email" required class="mt-1 block w-full rounded-md border-gray-500 bg-[#111722] text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="phone" class="block text-sm font-medium text-white">Telefono Cliente</label>
+                        <input type="tel" name="phone" id="phone" required class="mt-1 block w-full rounded-md border-gray-500 bg-[#111722] text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
+                    </div>
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="check_in" class="block text-sm font-medium text-white">Data di Check-in</label>
+                            <input type="date" name="check_in" id="check_in" required class="mt-1 block w-full rounded-md border-gray-500 bg-[#111722] text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
+                        </div>
+                        <div>
+                            <label for="check_out" class="block text-sm font-medium text-white">Data di Check-out</label>
+                            <input type="date" name="check_out" id="check_out" required class="mt-1 block w-full rounded-md border-gray-500 bg-[#111722] text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
+                        </div>
+                    </div>
+                     <div>
+                        <label for="guests" class="block text-sm font-medium text-white">Numero di Ospiti</label>
+                        <input type="number" name="guests" id="guests" min="1" required class="mt-1 block w-full rounded-md border-gray-500 bg-[#111722] text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-full shadow-sm text-sm font-bold text-black bg-[var(--c-gold-bright)] hover:bg-[var(--c-gold)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--c-gold)] transition-all">
+                            Crea Prenotazione
+                        </button>
+                    </div>
+                </form>
             </div>
         </main>
     </div>
@@ -143,6 +187,10 @@ function updateStatus(bookingId, newStatus) {
                             <label for="email" class="block text-sm font-medium text-white">Email Cliente</label>
                             <input type="email" name="email" id="email" required class="mt-1 block w-full rounded-md border-gray-500 bg-[#111722] text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
                         </div>
+                    </div>
+                    <div>
+                        <label for="phone" class="block text-sm font-medium text-white">Telefono Cliente</label>
+                        <input type="tel" name="phone" id="phone" required class="mt-1 block w-full rounded-md border-gray-500 bg-[#111722] text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
                     </div>
                      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>

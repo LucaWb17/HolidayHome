@@ -8,10 +8,10 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
 }
 
 // Fetch user data from the database
-$stmt = $conn->prepare("SELECT name, email, phone FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT name, email, phone, profile_image_path FROM users WHERE id = ?");
 $stmt->bind_param("i", $_SESSION['id']);
 $stmt->execute();
-$stmt->bind_result($name, $email, $phone);
+$stmt->bind_result($name, $email, $phone, $profile_image_path);
 $stmt->fetch();
 $stmt->close();
 
@@ -21,14 +21,16 @@ include 'php/header.php';
 <main class="flex-1 px-10 py-12 md:px-20 lg:px-40 bg-gray-900 text-white">
     <div class="mx-auto max-w-5xl pt-20">
         <h2 class="text-5xl font-bold mb-12 font-serif">Il Mio Profilo</h2>
+        <div id="avatar-message" class="text-center mb-4 text-white"></div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
             <div class="md:col-span-1 flex flex-col items-center md:items-start">
-                <div class="relative mb-6">
-                    <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-40 h-40 border-4 border-[var(--c-gold)]" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBP5YnpfnbFZLkUC9R8NLO3A4KnBnTg6Bo3wMaoARd01QyqfKtDUKo0X3l4JBZWezeN3RimC89DYUaLraWaIIZyY15AlNf2hQOdGrOZpF7vKQKmL1Trp-mVSw9ECNErFvgAwDG9_1Y6-PFtPFyeY-G3I59I3_AlhcPyk0_DeGJKROorHh1aem9o376bxfFaPP9yXGHRDYnFWhOUzXvlHN6KEDo_DmOTMmciNjCAqCzT0qF-EKO3EVqmb-y0QmHbp2vuqdVwyOJ1KBY");'></div>
-                    <button class="absolute bottom-1 right-1 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-[var(--c-gold)] text-black transition-transform hover:scale-110">
+                <form id="avatar-form" class="relative mb-6">
+                    <img id="avatar-image" src="<?php echo htmlspecialchars($profile_image_path ?? 'uploads/avatars/default.png'); ?>" alt="Immagine Profilo" class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-40 h-40 border-4 border-[var(--c-gold)]">
+                    <input type="file" name="profile_image" id="profile_image_input" class="hidden" accept="image/png, image/jpeg, image/gif">
+                    <button type="button" id="edit-avatar-button" class="absolute bottom-1 right-1 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-[var(--c-gold)] text-black transition-transform hover:scale-110">
                         <span class="material-symbols-outlined">edit</span>
                     </button>
-                </div>
+                </form>
                 <h3 class="text-3xl font-bold font-serif"><?php echo htmlspecialchars($name); ?></h3>
             </div>
             <div class="md:col-span-2">
@@ -98,6 +100,29 @@ include 'php/header.php';
             </div>
         </div>
 
+        <!-- Send Message to Admin Section -->
+        <div class="mt-16">
+            <div class="bg-black/20 p-8 rounded-xl backdrop-blur-sm">
+                <h3 class="text-4xl font-bold mb-8 font-serif">Invia un Messaggio all'Amministratore</h3>
+                <div id="user-message-response" class="text-center mb-4 text-white"></div>
+                <form id="user-send-message-form" class="space-y-6 max-w-lg mx-auto">
+                    <div>
+                        <label for="user_subject" class="block text-sm font-medium text-white">Oggetto</label>
+                        <input type="text" name="subject" id="user_subject" required class="mt-1 block w-full rounded-md border-gray-300 bg-white/20 text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label for="user_body" class="block text-sm font-medium text-white">Il tuo messaggio</label>
+                        <textarea name="body" id="user_body" rows="4" required class="mt-1 block w-full rounded-md border-gray-300 bg-white/20 text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50"></textarea>
+                    </div>
+                    <div>
+                        <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-full shadow-sm text-sm font-bold text-black bg-[var(--c-gold-bright)] hover:bg-[var(--c-gold)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--c-gold)] transition-all">
+                            Invia Messaggio
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- Change Password Section -->
         <div class="mt-16">
             <div class="bg-black/20 p-8 rounded-xl backdrop-blur-sm">
@@ -128,6 +153,71 @@ include 'php/header.php';
 </main>
 
 <script>
+// --- Avatar Upload Logic ---
+document.getElementById('edit-avatar-button').addEventListener('click', function() {
+    document.getElementById('profile_image_input').click();
+});
+
+document.getElementById('profile_image_input').addEventListener('change', function() {
+    const file = this.files[0];
+    if (file) {
+        const formData = new FormData();
+        formData.append('profile_image', file);
+        const messageDiv = document.getElementById('avatar-message');
+
+        fetch('php/upload_avatar.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            messageDiv.textContent = data.message;
+            if (data.status === 'success') {
+                messageDiv.className = 'text-center mb-4 text-green-400';
+                // Update the image src on success without a full page reload
+                document.getElementById('avatar-image').src = data.new_image_path + '?t=' + new Date().getTime();
+            } else {
+                messageDiv.className = 'text-center mb-4 text-red-400';
+            }
+        })
+        .catch(error => {
+            messageDiv.className = 'text-center mb-4 text-red-400';
+            messageDiv.textContent = 'An error occurred during upload.';
+            console.error('Error:', error);
+        });
+    }
+});
+
+// --- User Send Message Logic ---
+document.getElementById('user-send-message-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+    const messageDiv = document.getElementById('user-message-response');
+
+    fetch('php/user_send_message.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        messageDiv.textContent = data.message;
+        if (data.status === 'success') {
+            messageDiv.className = 'text-center mb-4 text-green-400';
+            form.reset();
+        } else {
+            messageDiv.className = 'text-center mb-4 text-red-400';
+        }
+    })
+    .catch(error => {
+        messageDiv.className = 'text-center mb-4 text-red-400';
+        messageDiv.textContent = 'An error occurred. Please try again.';
+        console.error('Error:', error);
+    });
+});
+
+
+// --- Change Password Logic ---
 document.getElementById('change-password-form').addEventListener('submit', function(e) {
     e.preventDefault();
     const form = e.target;

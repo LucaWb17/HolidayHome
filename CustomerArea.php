@@ -35,8 +35,13 @@ include 'php/header.php';
             </div>
             <div class="md:col-span-2">
                 <div class="bg-black/20 p-8 rounded-xl backdrop-blur-sm">
-                    <h4 class="text-3xl font-bold mb-6 text-[var(--c-gold)] font-serif">Dati Personali</h4>
-                    <div class="space-y-4">
+                    <div class="flex justify-between items-center mb-6">
+                        <h4 class="text-3xl font-bold text-[var(--c-gold)] font-serif">Dati Personali</h4>
+                        <button id="edit-profile-button" class="text-sm font-semibold text-[var(--c-gold-bright)] hover:text-white transition-colors">Modifica Dati</button>
+                    </div>
+
+                    <!-- User Data Display -->
+                    <div id="user-data-display" class="space-y-4">
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 border-b border-white/20 pb-4">
                             <p class="text-gray-300 font-semibold">Nome</p>
                             <p class="col-span-2"><?php echo htmlspecialchars($name); ?></p>
@@ -48,6 +53,44 @@ include 'php/header.php';
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 border-b border-white/20 pb-4">
                             <p class="text-gray-300 font-semibold">Telefono</p>
                             <p class="col-span-2"><?php echo htmlspecialchars($phone ?? 'N/A'); ?></p>
+                        </div>
+                    </div>
+
+                    <!-- User Data Edit Form (Initially Hidden) -->
+                    <div id="user-data-edit-form" class="hidden mt-6">
+                        <div id="update-profile-message" class="text-center mb-4 text-white"></div>
+                        <form id="update-profile-form" class="space-y-4">
+                            <div>
+                                <label for="name" class="block text-sm font-medium text-gray-300">Nome</label>
+                                <input type="text" name="name" id="name" value="<?php echo htmlspecialchars($name); ?>" required class="mt-1 block w-full rounded-md border-gray-500 bg-white/20 text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
+                            </div>
+                            <div>
+                                <label for="email" class="block text-sm font-medium text-gray-300">Email</label>
+                                <input type="email" name="email" id="email" value="<?php echo htmlspecialchars($email); ?>" required class="mt-1 block w-full rounded-md border-gray-500 bg-white/20 text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
+                            </div>
+                            <div>
+                                <label for="phone" class="block text-sm font-medium text-gray-300">Telefono</label>
+                                <input type="tel" name="phone" id="phone" value="<?php echo htmlspecialchars($phone ?? ''); ?>" class="mt-1 block w-full rounded-md border-gray-500 bg-white/20 text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
+                            </div>
+                            <div class="flex justify-end gap-4 mt-6">
+                                <button type="button" id="cancel-edit-button" class="py-2 px-4 rounded-full text-sm font-semibold hover:bg-white/10 transition-colors">Annulla</button>
+                                <button type="submit" class="py-2 px-4 rounded-full text-sm font-bold text-black bg-[var(--c-gold-bright)] hover:bg-[var(--c-gold)] transition-colors">Salva Modifiche</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Admin Contact Info -->
+                <div class="mt-8 bg-black/20 p-8 rounded-xl backdrop-blur-sm">
+                    <h4 class="text-3xl font-bold mb-6 text-[var(--c-gold)] font-serif">Contatta l'Amministratore</h4>
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <p class="text-gray-300 font-semibold">Email</p>
+                            <p class="col-span-2">admin@villaparadiso.com</p>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <p class="text-gray-300 font-semibold">Telefono</p>
+                            <p class="col-span-2">+39 123 456 7890</p>
                         </div>
                     </div>
                 </div>
@@ -69,10 +112,21 @@ include 'php/header.php';
         <!-- My Messages Section -->
         <div class="mt-16">
             <div class="bg-black/20 p-8 rounded-xl backdrop-blur-sm">
-                <h3 class="text-4xl font-bold mb-8 font-serif">I Miei Messaggi</h3>
+                <div class="flex items-center gap-4 mb-8">
+                    <h3 class="text-4xl font-bold font-serif">I Miei Messaggi</h3>
+                    <span id="message-notification-badge" class="hidden h-6 w-6 flex items-center justify-center rounded-full bg-red-500 text-sm font-bold text-white"></span>
+                </div>
                 <div class="space-y-4 max-h-[500px] overflow-y-auto">
                     <?php
                         $user_id = $_SESSION['id'];
+
+                        // Mark all user's messages as read
+                        $update_stmt = $conn->prepare("UPDATE messages SET is_read = 1 WHERE receiver_id = ?");
+                        $update_stmt->bind_param("i", $user_id);
+                        $update_stmt->execute();
+                        $update_stmt->close();
+
+                        // Fetch all messages for the user
                         $messages_stmt = $conn->prepare("SELECT * FROM messages WHERE receiver_id = ? ORDER BY timestamp DESC");
                         $messages_stmt->bind_param("i", $user_id);
                         $messages_stmt->execute();
@@ -80,10 +134,15 @@ include 'php/header.php';
                         if ($messages_result->num_rows > 0):
                             while($msg = $messages_result->fetch_assoc()):
                     ?>
-                                <div class="p-4 rounded-lg bg-[#111722]">
+                                <div id="message-<?php echo $msg['id']; ?>" class="p-4 rounded-lg bg-[#111722]">
                                     <div class="flex justify-between items-center mb-2">
                                         <p class="font-bold text-white"><?php echo htmlspecialchars($msg['subject']); ?></p>
-                                        <span class="text-xs text-gray-400"><?php echo date("d/m/Y H:i", strtotime($msg['timestamp'])); ?></span>
+                                        <div class="flex items-center">
+                                            <span class="text-xs text-gray-400 mr-4"><?php echo date("d/m/Y H:i", strtotime($msg['timestamp'])); ?></span>
+                                            <button onclick="deleteMessage(<?php echo $msg['id']; ?>)" class="text-red-500 hover:text-red-400">
+                                                <span class="material-symbols-outlined text-base">delete</span>
+                                            </button>
+                                        </div>
                                     </div>
                                     <p class="text-gray-300"><?php echo nl2br(htmlspecialchars($msg['body'])); ?></p>
                                 </div>
@@ -153,6 +212,63 @@ include 'php/header.php';
 </main>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const notificationBadge = document.getElementById('message-notification-badge');
+
+    function fetchUnreadMessages() {
+        fetch('php/get_unread_messages.php')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success' && data.unread_count > 0) {
+                    notificationBadge.textContent = data.unread_count;
+                    notificationBadge.classList.remove('hidden');
+                } else {
+                    notificationBadge.classList.add('hidden');
+                }
+            })
+            .catch(error => console.error('Error fetching unread messages:', error));
+    }
+
+    // Fetch immediately on page load
+    fetchUnreadMessages();
+
+    // And then fetch every 30 seconds
+    setInterval(fetchUnreadMessages, 30000);
+});
+
+function deleteMessage(messageId) {
+    if (!confirm('Sei sicuro di voler cancellare questo messaggio?')) {
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('message_id', messageId);
+    const messageDiv = document.getElementById('user-message-response');
+
+    fetch('php/delete_message.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        messageDiv.textContent = data.message;
+        if (data.status === 'success') {
+            messageDiv.className = 'text-center mb-4 text-green-400';
+            const messageElement = document.getElementById('message-' + messageId);
+            if (messageElement) {
+                messageElement.remove();
+            }
+        } else {
+            messageDiv.className = 'text-center mb-4 text-red-400';
+        }
+    })
+    .catch(error => {
+        messageDiv.className = 'text-center mb-4 text-red-400';
+        messageDiv.textContent = 'An error occurred. Please try again.';
+        console.error('Error:', error);
+    });
+}
+
 // --- Avatar Upload Logic ---
 document.getElementById('edit-avatar-button').addEventListener('click', function() {
     document.getElementById('profile_image_input').click();
@@ -205,6 +321,54 @@ document.getElementById('user-send-message-form').addEventListener('submit', fun
         if (data.status === 'success') {
             messageDiv.className = 'text-center mb-4 text-green-400';
             form.reset();
+        } else {
+            messageDiv.className = 'text-center mb-4 text-red-400';
+        }
+    })
+    .catch(error => {
+        messageDiv.className = 'text-center mb-4 text-red-400';
+        messageDiv.textContent = 'An error occurred. Please try again.';
+        console.error('Error:', error);
+    });
+});
+
+
+// --- Profile Edit Toggle Logic ---
+const editProfileButton = document.getElementById('edit-profile-button');
+const cancelEditButton = document.getElementById('cancel-edit-button');
+const displayDiv = document.getElementById('user-data-display');
+const editFormDiv = document.getElementById('user-data-edit-form');
+
+editProfileButton.addEventListener('click', () => {
+    displayDiv.classList.add('hidden');
+    editFormDiv.classList.remove('hidden');
+});
+
+cancelEditButton.addEventListener('click', () => {
+    editFormDiv.classList.add('hidden');
+    displayDiv.classList.remove('hidden');
+    document.getElementById('update-profile-message').textContent = '';
+});
+
+
+// --- Update Profile Logic ---
+document.getElementById('update-profile-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+    const messageDiv = document.getElementById('update-profile-message');
+
+    fetch('php/update_user_profile.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        messageDiv.textContent = data.message;
+        if (data.status === 'success') {
+            messageDiv.className = 'text-center mb-4 text-green-400';
+            // Reload the page to show updated data
+            setTimeout(() => location.reload(), 1500);
         } else {
             messageDiv.className = 'text-center mb-4 text-red-400';
         }

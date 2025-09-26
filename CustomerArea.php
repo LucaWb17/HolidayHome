@@ -227,7 +227,7 @@ include 'php/header.php';
     </div>
 </main>
 
-<script>
+<script nonce="<?php echo CSP_NONCE; ?>">
 function deleteMessage(messageId) {
     if (!confirm('Sei sicuro di voler cancellare questo messaggio?')) {
         return;

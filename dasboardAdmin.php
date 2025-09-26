@@ -1,4 +1,6 @@
 <?php
+// Includi per primo gli header di sicurezza per assicurarti che vengano inviati prima di ogni altro output.
+require_once 'php/security_headers.php';
 include 'php/config.php';
 include 'php/admin_security.php';
 
@@ -25,7 +27,7 @@ $result = $stmt->get_result();
     <link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="css/style.css" rel="stylesheet"/>
-    <style type="text/tailwindcss">
+    <style type="text/tailwindcss" nonce="<?php echo CSP_NONCE; ?>">
         :root {
             --c-gold: #c5a87b;
             --c-gold-bright: #e6c589;
@@ -116,7 +118,7 @@ $result = $stmt->get_result();
         </main>
     </div>
 </div>
-<script>
+<script nonce="<?php echo CSP_NONCE; ?>">
 document.getElementById('change-password-form').addEventListener('submit', function(e) {
     e.preventDefault();
     const form = e.target;

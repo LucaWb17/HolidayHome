@@ -2,6 +2,8 @@
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
+// Includi gli header di sicurezza (CSP, etc.) prima di qualsiasi output HTML
+require_once 'security_headers.php';
 ?>
 <!DOCTYPE html>
 <html lang="it">
@@ -15,7 +17,7 @@ if (session_status() == PHP_SESSION_NONE) {
     <link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="css/style.css" rel="stylesheet"/>
-    <style type="text/tailwindcss">
+    <style type="text/tailwindcss" nonce="<?php echo CSP_NONCE; ?>">
         :root {
             --c-gold: #c5a87b;
             --c-gold-bright: #e6c589;
@@ -94,7 +96,7 @@ if (session_status() == PHP_SESSION_NONE) {
             </nav>
         </div>
     </header>
-<script>
+<script nonce="<?php echo CSP_NONCE; ?>">
 document.addEventListener('DOMContentLoaded', function() {
     // Mobile menu toggle
     const mobileMenuButton = document.getElementById('mobile-menu-button');

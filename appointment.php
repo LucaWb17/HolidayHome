@@ -69,7 +69,7 @@ include 'php/header.php';
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <!-- Italian locale for flatpickr (must be after the main script) -->
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/it.js"></script>
-<script>
+<script nonce="<?php echo CSP_NONCE; ?>">
 document.addEventListener('DOMContentLoaded', function() {
     // Fetch booked dates and initialize the calendar
     fetch('php/get_booked_dates.php')

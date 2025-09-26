@@ -104,6 +104,7 @@ $result = $conn->query("SELECT * FROM bookings ORDER BY id DESC");
                 <h3 class="text-2xl font-bold mb-6 text-white font-serif">Aggiungi Nuova Prenotazione</h3>
                 <div id="add-booking-message" class="text-center mb-4 text-white"></div>
                 <form id="add-booking-form" class="space-y-6 max-w-2xl mx-auto">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label for="name" class="block text-sm font-medium text-white">Nome Cliente</label>
@@ -146,9 +147,11 @@ function updateStatus(bookingId, newStatus) {
         return;
     }
 
+    const csrfToken = document.querySelector('#add-booking-form input[name="csrf_token"]').value;
     const formData = new FormData();
     formData.append('booking_id', bookingId);
     formData.append('new_status', newStatus);
+    formData.append('csrf_token', csrfToken);
 
     fetch('php/update_booking_status.php', {
         method: 'POST',

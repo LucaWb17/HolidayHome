@@ -26,6 +26,7 @@ include 'php/header.php';
         <div class="bg-black/20 p-8 rounded-xl backdrop-blur-sm shadow-2xl border border-white/10">
             <div id="message" class="text-center mb-4 text-white"></div>
             <form id="booking-form" class="space-y-6">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                 <div>
                     <label for="name" class="block text-sm font-medium text-white">Nome Completo</label>
                     <input type="text" name="name" id="name" required class="mt-1 block w-full rounded-md border-gray-300 bg-white/20 text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50" value="<?php echo htmlspecialchars($name); ?>">

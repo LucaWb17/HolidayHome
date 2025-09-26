@@ -93,6 +93,7 @@ $result = $stmt->get_result();
                 <h3 class="text-2xl font-bold mb-6 text-white font-serif">Cambia la Tua Password</h3>
                 <div id="change-password-message" class="text-center mb-4 text-white"></div>
                 <form id="change-password-form" class="space-y-6 max-w-lg mx-auto">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                     <div>
                         <label for="current_password" class="block text-sm font-medium text-white">Password Attuale</label>
                         <input type="password" name="current_password" id="current_password" required class="mt-1 block w-full rounded-md border-gray-500 bg-[#111722] text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">

@@ -1,6 +1,9 @@
 <?php
 require_once 'config.php';
 
+// Verifica il token CSRF prima di procedere
+verify_csrf_token();
+
 $response = ['status' => 'error', 'message' => 'An unknown error occurred.'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

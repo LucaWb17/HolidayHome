@@ -33,4 +33,8 @@ try {
     http_response_code(500);
     die("Errore interno del server. Si prega di riprovare più tardi.");
 }
+
+// Includi il gestore CSRF e genera un token per la sessione corrente.
+require_once 'csrf_handler.php';
+generate_csrf_token();
 ?>

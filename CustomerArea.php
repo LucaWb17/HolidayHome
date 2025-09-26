@@ -20,6 +20,7 @@ include 'php/header.php';
         <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
             <div class="md:col-span-1 flex flex-col items-center md:items-start">
                 <form id="avatar-form" class="relative mb-6">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                     <img id="avatar-image" src="<?php echo htmlspecialchars($profile_image_path ?? 'uploads/avatars/default.png'); ?>" alt="Immagine Profilo" class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-40 h-40 border-4 border-[var(--c-gold)]">
                     <input type="file" name="profile_image" id="profile_image_input" class="hidden" accept="image/png, image/jpeg, image/gif">
                     <button type="button" id="edit-avatar-button" class="absolute bottom-1 right-1 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-[var(--c-gold)] text-black transition-transform hover:scale-110">
@@ -55,6 +56,7 @@ include 'php/header.php';
                     <div id="user-data-edit-form" class="hidden mt-6">
                         <div id="update-profile-message" class="text-center mb-4 text-white"></div>
                         <form id="update-profile-form" class="space-y-4">
+                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                             <div>
                                 <label for="name" class="block text-sm font-medium text-gray-300">Nome</label>
                                 <input type="text" name="name" id="name" value="<?php echo htmlspecialchars($name); ?>" required class="mt-1 block w-full rounded-md border-gray-500 bg-white/20 text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
@@ -177,6 +179,7 @@ include 'php/header.php';
                 <h3 class="text-4xl font-bold mb-8 font-serif">Invia un Messaggio all'Amministratore</h3>
                 <div id="user-message-response" class="text-center mb-4 text-white"></div>
                 <form id="user-send-message-form" class="space-y-6 max-w-lg mx-auto">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                     <div>
                         <label for="user_subject" class="block text-sm font-medium text-white">Oggetto</label>
                         <input type="text" name="subject" id="user_subject" required class="mt-1 block w-full rounded-md border-gray-300 bg-white/20 text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
@@ -200,6 +203,7 @@ include 'php/header.php';
                 <h4 class="text-3xl font-bold mb-6 text-[var(--c-gold)] font-serif">Cambia Password</h4>
                 <div id="change-password-message" class="text-center mb-4 text-white"></div>
                 <form id="change-password-form" class="space-y-6 max-w-lg mx-auto">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                     <div>
                         <label for="current_password" class="block text-sm font-medium text-white">Password Attuale</label>
                         <input type="password" name="current_password" id="current_password" required class="mt-1 block w-full rounded-md border-gray-300 bg-white/20 text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
@@ -229,8 +233,10 @@ function deleteMessage(messageId) {
         return;
     }
 
+    const csrfToken = document.querySelector('#user-send-message-form input[name="csrf_token"]').value;
     const formData = new FormData();
     formData.append('message_id', messageId);
+    formData.append('csrf_token', csrfToken);
     const messageDiv = document.getElementById('user-message-response');
 
     fetch('php/delete_message.php', {
@@ -263,10 +269,11 @@ document.getElementById('edit-avatar-button').addEventListener('click', function
 });
 
 document.getElementById('profile_image_input').addEventListener('change', function() {
+    const form = document.getElementById('avatar-form');
     const file = this.files[0];
     if (file) {
-        const formData = new FormData();
-        formData.append('profile_image', file);
+        // Usando new FormData(form), catturiamo automaticamente sia il token CSRF che il file selezionato.
+        const formData = new FormData(form);
         const messageDiv = document.getElementById('avatar-message');
 
         fetch('php/upload_avatar.php', {

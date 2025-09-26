@@ -2,6 +2,7 @@
 /**
  * Gestore per la protezione da Cross-Site Request Forgery (CSRF).
  */
+require_once 'security_logger.php';
 
 /**
  * Genera un token CSRF se non ne esiste già uno nella sessione.
@@ -29,12 +30,14 @@ function verify_csrf_token() {
     }
 
     if (!isset($_POST['csrf_token']) || !isset($_SESSION['csrf_token'])) {
+        log_security_event("Fallimento validazione CSRF: Token mancante. URI richiesto: " . $_SERVER['REQUEST_URI']);
         http_response_code(403);
         echo json_encode(['status' => 'error', 'message' => 'Token CSRF mancante. Richiesta bloccata.']);
         exit;
     }
 
     if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
+        log_security_event("Fallimento validazione CSRF: Token non valido. URI richiesto: " . $_SERVER['REQUEST_URI']);
         http_response_code(403);
         echo json_encode(['status' => 'error', 'message' => 'Token CSRF non valido. Richiesta bloccata.']);
         exit;

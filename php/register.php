@@ -18,6 +18,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $response['message'] = 'Invalid email format.';
         } else {
+            // --- Rafforzamento Politica Password ---
+            $password_err = '';
+            if (strlen($password) < 12) {
+                $password_err = 'La password deve essere lunga almeno 12 caratteri.';
+            } elseif (!preg_match('/[A-Z]/', $password)) {
+                $password_err = 'La password deve contenere almeno una lettera maiuscola.';
+            } elseif (!preg_match('/[a-z]/', $password)) {
+                $password_err = 'La password deve contenere almeno una lettera minuscola.';
+            } elseif (!preg_match('/[0-9]/', $password)) {
+                $password_err = 'La password deve contenere almeno un numero.';
+            } elseif (!preg_match('/[\W_]/', $password)) { // \W corrisponde a qualsiasi carattere non alfanumerico
+                $password_err = 'La password deve contenere almeno un carattere speciale.';
+            }
+
+            if (!empty($password_err)) {
+                $response['message'] = $password_err;
+                header('Content-Type: application/json');
+                echo json_encode($response);
+                exit;
+            }
+            // --- Fine Rafforzamento ---
+
             // Check if email already exists
             $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
             $stmt->bind_param("s", $email);

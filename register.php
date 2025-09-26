@@ -51,6 +51,7 @@
                 <div>
                     <label for="password" class="block text-sm font-medium text-white">Password</label>
                     <input type="password" name="password" id="password" required class="mt-1 block w-full rounded-md border-gray-300 bg-white/20 text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
+                    <p class="mt-2 text-xs text-gray-300">La password deve contenere almeno: 12 caratteri, una lettera maiuscola, una minuscola, un numero e un carattere speciale.</p>
                 </div>
                 <div>
                     <label for="phone" class="block text-sm font-medium text-white">Numero di Telefono</label>

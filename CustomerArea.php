@@ -112,18 +112,36 @@ include 'php/header.php';
         <!-- My Messages Section -->
         <div class="mt-16">
             <div class="bg-black/20 p-8 rounded-xl backdrop-blur-sm">
-                <h3 class="text-4xl font-bold mb-8 font-serif">I Miei Messaggi</h3>
-                <div class="space-y-4 max-h-[500px] overflow-y-auto">
+                <div class="flex items-center gap-4 mb-8">
+                    <h3 class="text-4xl font-bold font-serif">I Miei Messaggi</h3>
                     <?php
                         $user_id = $_SESSION['id'];
 
-                        // Mark all user's messages as read
+                        // 1. First, get the count of unread messages
+                        $unread_stmt = $conn->prepare("SELECT COUNT(id) as unread_count FROM messages WHERE receiver_id = ? AND is_read = 0");
+                        $unread_stmt->bind_param("i", $user_id);
+                        $unread_stmt->execute();
+                        $unread_result = $unread_stmt->get_result();
+                        $unread_data = $unread_result->fetch_assoc();
+                        $unread_count = (int)$unread_data['unread_count'];
+                        $unread_stmt->close();
+
+                        if ($unread_count > 0):
+                    ?>
+                        <span class="h-6 w-6 flex items-center justify-center rounded-full bg-red-500 text-sm font-bold text-white"><?php echo $unread_count; ?></span>
+                    <?php
+                        endif;
+
+                        // 2. Now, mark all messages as read
                         $update_stmt = $conn->prepare("UPDATE messages SET is_read = 1 WHERE receiver_id = ?");
                         $update_stmt->bind_param("i", $user_id);
                         $update_stmt->execute();
                         $update_stmt->close();
-
-                        // Fetch all messages for the user
+                    ?>
+                </div>
+                <div class="space-y-4 max-h-[500px] overflow-y-auto">
+                    <?php
+                        // 3. Fetch all messages for display
                         $messages_stmt = $conn->prepare("SELECT * FROM messages WHERE receiver_id = ? ORDER BY timestamp DESC");
                         $messages_stmt->bind_param("i", $user_id);
                         $messages_stmt->execute();

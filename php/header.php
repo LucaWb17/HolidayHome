@@ -53,11 +53,8 @@ if (session_status() == PHP_SESSION_NONE) {
             </nav>
             <div class="hidden items-center gap-4 md:flex">
                 <?php if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true): ?>
-                    <a class="relative text-white hover:text-[var(--c-gold)] transition-colors text-base font-medium" href="<?php echo $_SESSION['role'] === 'admin' ? 'dasboardAdmin.php' : 'CustomerArea.php'; ?>">
-                        <span>Area Riservata</span>
-                        <?php if ($_SESSION['role'] !== 'admin'): ?>
-                            <span id="header-message-badge" class="absolute top-0 right-0 -mt-2 -mr-3 hidden h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white"></span>
-                        <?php endif; ?>
+                    <a class="text-white hover:text-[var(--c-gold)] transition-colors text-base font-medium" href="<?php echo $_SESSION['role'] === 'admin' ? 'dasboardAdmin.php' : 'CustomerArea.php'; ?>">
+                        Area Riservata
                     </a>
                     <a class="min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-full border border-[var(--c-gold)] bg-transparent h-11 px-6 text-sm font-bold text-white transition-all hover:bg-[var(--c-gold)] hover:text-black flex" href="php/logout.php">
                         <span class="truncate">Logout</span>
@@ -112,32 +109,5 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => mobileMenu.classList.add('hidden'), 300);
         }
     });
-
-    // --- User Message Notification Logic ---
-    <?php if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true && $_SESSION['role'] !== 'admin'): ?>
-    const notificationBadge = document.getElementById('header-message-badge');
-
-    function fetchUnreadMessages() {
-        if (!notificationBadge) return; // Exit if badge element doesn't exist
-
-        fetch('php/get_unread_messages.php')
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success' && data.unread_count > 0) {
-                    notificationBadge.textContent = data.unread_count;
-                    notificationBadge.classList.remove('hidden');
-                } else {
-                    notificationBadge.classList.add('hidden');
-                }
-            })
-            .catch(error => console.error('Error fetching unread messages:', error));
-    }
-
-    // Fetch immediately on page load
-    fetchUnreadMessages();
-
-    // And then fetch every 30 seconds
-    setInterval(fetchUnreadMessages, 30000);
-    <?php endif; ?>
 });
 </script>

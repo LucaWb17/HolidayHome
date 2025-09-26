@@ -1,4 +1,6 @@
 <?php
+// Includi per primo gli header di sicurezza per assicurarti che vengano inviati prima di ogni altro output.
+require_once 'php/security_headers.php';
 include 'php/config.php';
 include 'php/admin_security.php';
 
@@ -19,7 +21,7 @@ $result = $conn->query("SELECT * FROM bookings ORDER BY id DESC");
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="css/style.css" rel="stylesheet"/>
-    <style type="text/tailwindcss">
+    <style type="text/tailwindcss" nonce="<?php echo CSP_NONCE; ?>">
         :root {
             --c-gold: #c5a87b;
             --c-gold-bright: #e6c589;
@@ -140,7 +142,7 @@ $result = $conn->query("SELECT * FROM bookings ORDER BY id DESC");
         </main>
     </div>
 </div>
-<script>
+<script nonce="<?php echo CSP_NONCE; ?>">
 function updateStatus(bookingId, newStatus) {
     const messageDiv = document.getElementById('booking-message');
     if (!confirm(`Sei sicuro di voler impostare lo stato su '${newStatus}' per questa prenotazione?`)) {
@@ -218,7 +220,7 @@ function updateStatus(bookingId, newStatus) {
         </main>
     </div>
 </div>
-<script>
+<script nonce="<?php echo CSP_NONCE; ?>">
 document.getElementById('add-booking-form').addEventListener('submit', function(e) {
     e.preventDefault();
     const form = e.target;
@@ -251,7 +253,7 @@ document.getElementById('add-booking-form').addEventListener('submit', function(
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <!-- Italian locale for flatpickr (must be after the main script) -->
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/it.js"></script>
-<script>
+<script nonce="<?php echo CSP_NONCE; ?>">
 document.addEventListener('DOMContentLoaded', function() {
     // Fetch booked dates and initialize the calendar for the admin form
     fetch('php/get_booked_dates.php')

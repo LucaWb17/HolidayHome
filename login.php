@@ -1,3 +1,4 @@
+<?php require_once 'php/security_headers.php'; ?>
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -8,7 +9,7 @@
     <title>Login - Villa Paradiso</title>
     <link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <style type="text/tailwindcss">
+    <style type="text/tailwindcss" nonce="<?php echo CSP_NONCE; ?>">
         :root {
             --c-gold: #c5a87b;
             --c-gold-bright: #e6c589;
@@ -59,7 +60,7 @@
         </div>
     </div>
 
-    <script>
+    <script nonce="<?php echo CSP_NONCE; ?>">
         document.getElementById('login-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const form = e.target;

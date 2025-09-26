@@ -101,6 +101,7 @@ $messages_result = $messages_stmt->get_result();
                     <h3 class="text-xl font-bold text-white mb-4 font-serif">Invia Nuovo Messaggio</h3>
                     <div id="message-response" class="text-center mb-4 text-white"></div>
                     <form id="send-message-form" class="space-y-4">
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                         <input type="hidden" name="receiver_id" value="<?php echo $receiver_id; ?>">
                         <div>
                             <label for="subject" class="block text-sm font-medium text-gray-300">Oggetto</label>
@@ -127,8 +128,10 @@ function deleteMessage(messageId) {
         return;
     }
 
+    const csrfToken = document.querySelector('#send-message-form input[name="csrf_token"]').value;
     const formData = new FormData();
     formData.append('message_id', messageId);
+    formData.append('csrf_token', csrfToken);
     const messageDiv = document.getElementById('message-response');
 
     fetch('php/delete_message.php', {

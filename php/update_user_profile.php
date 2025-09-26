@@ -1,6 +1,9 @@
 <?php
 include 'config.php';
 
+// Verifica il token CSRF prima di procedere
+verify_csrf_token();
+
 header('Content-Type: application/json');
 
 // Check if the user is logged in

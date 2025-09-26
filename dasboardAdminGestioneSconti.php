@@ -48,6 +48,7 @@ $discounts_result = $conn->query("SELECT d.*, u.name as user_name FROM discounts
                     <h3 class="text-xl font-bold text-white mb-4 font-serif">Crea Nuovo Sconto</h3>
                     <div id="discount-message" class="text-center mb-4 text-white"></div>
                     <form id="create-discount-form" class="space-y-4">
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                         <div>
                             <label for="user_id" class="block text-sm font-medium text-gray-300">Seleziona Utente</label>
                             <select name="user_id" id="user_id" required class="mt-1 block w-full rounded-md border-gray-500 bg-[#111722] text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">

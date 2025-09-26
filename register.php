@@ -38,6 +38,7 @@
             <h3 class="font-serif text-2xl font-bold text-center text-white mb-6">Crea un nuovo account</h3>
             <div id="message" class="text-center mb-4 text-white"></div>
             <form id="register-form" class="space-y-6">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                 <div>
                     <label for="name" class="block text-sm font-medium text-white">Nome</label>
                     <input type="text" name="name" id="name" required class="mt-1 block w-full rounded-md border-gray-300 bg-white/20 text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">

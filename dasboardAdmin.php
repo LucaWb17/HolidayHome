@@ -2,8 +2,16 @@
 include 'php/config.php';
 // Note: admin_nav.php handles the session check and authorization.
 
-// Fetch all users from the database
-$result = $conn->query("SELECT id, name, email, role FROM users");
+// Fetch all users from the database along with their unread message count for the admin
+$admin_id = $_SESSION['id'];
+$stmt = $conn->prepare("
+    SELECT u.id, u.name, u.email, u.role,
+           (SELECT COUNT(*) FROM messages m WHERE m.sender_id = u.id AND m.receiver_id = ? AND m.is_read = 0) as unread_count
+    FROM users u
+");
+$stmt->bind_param("i", $admin_id);
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
 <!DOCTYPE html>
 <html lang="it">
@@ -63,7 +71,12 @@ $result = $conn->query("SELECT id, name, email, role FROM users");
                                         </span>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <a href="dasboardAdminComunicazioni.php?user_id=<?php echo $row['id']; ?>" class="text-[var(--c-gold)] hover:underline">Invia Messaggio</a>
+                                        <div class="flex items-center gap-2">
+                                            <a href="dasboardAdminComunicazioni.php?user_id=<?php echo $row['id']; ?>" class="text-[var(--c-gold)] hover:underline">Invia Messaggio</a>
+                                            <?php if ($row['unread_count'] > 0): ?>
+                                                <span class="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white"><?php echo $row['unread_count']; ?></span>
+                                            <?php endif; ?>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endwhile; ?>

@@ -28,9 +28,12 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || $_SESSION
             <span class="material-symbols-outlined">sell</span>
             <p class="text-sm font-medium">Gestione Sconti</p>
         </a>
-        <a class="flex items-center gap-3 px-3 py-2 text-white/70 hover:text-white hover:bg-white/10 rounded-md transition-colors" href="dasboardAdminComunicazioni.php">
-            <span class="material-symbols-outlined">mail</span>
-            <p class="text-sm font-medium">Comunicazioni</p>
+        <a class="flex items-center justify-between gap-3 px-3 py-2 text-white/70 hover:text-white hover:bg-white/10 rounded-md transition-colors" href="dasboardAdmin.php">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined">mail</span>
+                <p class="text-sm font-medium">Comunicazioni</p>
+            </div>
+            <span id="message-notification-badge" class="hidden h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white"></span>
         </a>
     </nav>
     <div class="flex flex-col gap-1 border-t border-white/10 pt-4">
@@ -40,3 +43,28 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || $_SESSION
         </a>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const notificationBadge = document.getElementById('message-notification-badge');
+
+    function fetchUnreadMessages() {
+        fetch('php/get_unread_messages.php')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success' && data.unread_count > 0) {
+                    notificationBadge.textContent = data.unread_count;
+                    notificationBadge.classList.remove('hidden');
+                } else {
+                    notificationBadge.classList.add('hidden');
+                }
+            })
+            .catch(error => console.error('Error fetching unread messages:', error));
+    }
+
+    // Fetch immediately on page load
+    fetchUnreadMessages();
+
+    // And then fetch every 30 seconds
+    setInterval(fetchUnreadMessages, 30000);
+});
+</script>

@@ -15,6 +15,8 @@ $result = $conn->query("SELECT * FROM bookings ORDER BY id DESC");
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
     <title>Admin Dashboard - Gestione Prenotazioni</title>
     <link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+    <!-- flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="css/style.css" rel="stylesheet"/>
     <style type="text/tailwindcss">
@@ -116,15 +118,12 @@ $result = $conn->query("SELECT * FROM bookings ORDER BY id DESC");
                         <label for="phone" class="block text-sm font-medium text-white">Telefono Cliente</label>
                         <input type="tel" name="phone" id="phone" required class="mt-1 block w-full rounded-md border-gray-500 bg-[#111722] text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
                     </div>
-                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label for="check_in" class="block text-sm font-medium text-white">Data di Check-in</label>
-                            <input type="date" name="check_in" id="check_in" required class="mt-1 block w-full rounded-md border-gray-500 bg-[#111722] text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
-                        </div>
-                        <div>
-                            <label for="check_out" class="block text-sm font-medium text-white">Data di Check-out</label>
-                            <input type="date" name="check_out" id="check_out" required class="mt-1 block w-full rounded-md border-gray-500 bg-[#111722] text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
-                        </div>
+                    <div>
+                        <label for="admin-date-range" class="block text-sm font-medium text-white">Periodo del Soggiorno</label>
+                        <input type="text" id="admin-date-range" required class="mt-1 block w-full rounded-md border-gray-500 bg-[#111722] text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50" placeholder="Seleziona le date...">
+                        <!-- Hidden inputs to store the actual dates for the form submission -->
+                        <input type="hidden" name="check_in" id="check_in">
+                        <input type="hidden" name="check_out" id="check_out">
                     </div>
                      <div>
                         <label for="guests" class="block text-sm font-medium text-white">Numero di Ospiti</label>
@@ -243,6 +242,33 @@ document.getElementById('add-booking-form').addEventListener('submit', function(
         messageDiv.textContent = 'An error occurred. Please try again.';
         console.error('Error:', error);
     });
+});
+</script>
+<!-- flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<!-- Italian locale for flatpickr (must be after the main script) -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/it.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Fetch booked dates and initialize the calendar for the admin form
+    fetch('php/get_booked_dates.php')
+        .then(response => response.json())
+        .then(bookedDates => {
+            flatpickr("#admin-date-range", {
+                mode: "range",
+                dateFormat: "Y-m-d",
+                minDate: "today",
+                locale: "it", // Set Italian locale
+                disable: bookedDates,
+                onChange: function(selectedDates, dateStr, instance) {
+                    if (selectedDates.length === 2) {
+                        document.getElementById('check_in').value = instance.formatDate(selectedDates[0], "Y-m-d");
+                        document.getElementById('check_out').value = instance.formatDate(selectedDates[1], "Y-m-d");
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error fetching booked dates for admin calendar:', error));
 });
 </script>
 </body>

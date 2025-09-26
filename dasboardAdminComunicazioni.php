@@ -25,6 +25,15 @@ if (!$receiver) {
 
 // Fetch message history
 $admin_id = $_SESSION['id'];
+$admin_id = $_SESSION['id'];
+
+// Mark messages from this user as read
+$update_stmt = $conn->prepare("UPDATE messages SET is_read = 1 WHERE sender_id = ? AND receiver_id = ?");
+$update_stmt->bind_param("ii", $receiver_id, $admin_id);
+$update_stmt->execute();
+$update_stmt->close();
+
+// Fetch message history
 $messages_stmt = $conn->prepare("SELECT * FROM messages WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?) ORDER BY timestamp ASC");
 $messages_stmt->bind_param("iiii", $admin_id, $receiver_id, $receiver_id, $admin_id);
 $messages_stmt->execute();
@@ -68,10 +77,15 @@ $messages_result = $messages_stmt->get_result();
                     <div class="space-y-4">
                         <?php if ($messages_result->num_rows > 0): ?>
                             <?php while($msg = $messages_result->fetch_assoc()): ?>
-                                <div class="p-4 rounded-lg <?php echo ($msg['sender_id'] === $admin_id) ? 'bg-[#111722]' : 'bg-black/20'; ?>">
+                                <div id="message-<?php echo $msg['id']; ?>" class="p-4 rounded-lg <?php echo ($msg['sender_id'] === $admin_id) ? 'bg-[#111722]' : 'bg-black/20'; ?>">
                                     <div class="flex justify-between items-center mb-2">
                                         <p class="font-bold text-white"><?php echo htmlspecialchars($msg['subject']); ?></p>
-                                        <span class="text-xs text-gray-400"><?php echo date("d/m/Y H:i", strtotime($msg['timestamp'])); ?></span>
+                                        <div class="flex items-center">
+                                            <span class="text-xs text-gray-400 mr-4"><?php echo date("d/m/Y H:i", strtotime($msg['timestamp'])); ?></span>
+                                            <button onclick="deleteMessage(<?php echo $msg['id']; ?>)" class="text-red-500 hover:text-red-400">
+                                                <span class="material-symbols-outlined text-base">delete</span>
+                                            </button>
+                                        </div>
                                     </div>
                                     <p class="text-gray-300"><?php echo nl2br(htmlspecialchars($msg['body'])); ?></p>
                                 </div>
@@ -108,6 +122,39 @@ $messages_result = $messages_stmt->get_result();
     </div>
 </div>
 <script>
+function deleteMessage(messageId) {
+    if (!confirm('Sei sicuro di voler cancellare questo messaggio?')) {
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('message_id', messageId);
+    const messageDiv = document.getElementById('message-response');
+
+    fetch('php/delete_message.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        messageDiv.textContent = data.message;
+        if (data.status === 'success') {
+            messageDiv.className = 'text-center mb-4 text-green-400';
+            const messageElement = document.getElementById('message-' + messageId);
+            if (messageElement) {
+                messageElement.remove();
+            }
+        } else {
+            messageDiv.className = 'text-center mb-4 text-red-400';
+        }
+    })
+    .catch(error => {
+        messageDiv.className = 'text-center mb-4 text-red-400';
+        messageDiv.textContent = 'An error occurred. Please try again.';
+        console.error('Error:', error);
+    });
+}
+
 document.getElementById('send-message-form').addEventListener('submit', function(e) {
     e.preventDefault();
     const form = e.target;

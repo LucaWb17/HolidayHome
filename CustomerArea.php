@@ -112,10 +112,7 @@ include 'php/header.php';
         <!-- My Messages Section -->
         <div class="mt-16">
             <div class="bg-black/20 p-8 rounded-xl backdrop-blur-sm">
-                <div class="flex items-center gap-4 mb-8">
-                    <h3 class="text-4xl font-bold font-serif">I Miei Messaggi</h3>
-                    <span id="message-notification-badge" class="hidden h-6 w-6 flex items-center justify-center rounded-full bg-red-500 text-sm font-bold text-white"></span>
-                </div>
+                <h3 class="text-4xl font-bold mb-8 font-serif">I Miei Messaggi</h3>
                 <div class="space-y-4 max-h-[500px] overflow-y-auto">
                     <?php
                         $user_id = $_SESSION['id'];
@@ -212,30 +209,6 @@ include 'php/header.php';
 </main>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const notificationBadge = document.getElementById('message-notification-badge');
-
-    function fetchUnreadMessages() {
-        fetch('php/get_unread_messages.php')
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success' && data.unread_count > 0) {
-                    notificationBadge.textContent = data.unread_count;
-                    notificationBadge.classList.remove('hidden');
-                } else {
-                    notificationBadge.classList.add('hidden');
-                }
-            })
-            .catch(error => console.error('Error fetching unread messages:', error));
-    }
-
-    // Fetch immediately on page load
-    fetchUnreadMessages();
-
-    // And then fetch every 30 seconds
-    setInterval(fetchUnreadMessages, 30000);
-});
-
 function deleteMessage(messageId) {
     if (!confirm('Sei sicuro di voler cancellare questo messaggio?')) {
         return;

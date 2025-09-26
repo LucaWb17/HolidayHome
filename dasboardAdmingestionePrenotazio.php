@@ -1,6 +1,6 @@
 <?php
 include 'php/config.php';
-// Note: admin_nav.php handles the session check and authorization.
+include 'php/admin_security.php';
 
 // Fetch all bookings from the database
 $result = $conn->query("SELECT * FROM bookings ORDER BY id DESC");

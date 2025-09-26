@@ -1,6 +1,6 @@
 <?php
 include 'php/config.php';
-// Note: admin_nav.php handles the session check and authorization.
+include 'php/admin_security.php';
 
 // Fetch all users from the database along with their unread message count for the admin
 $admin_id = $_SESSION['id'];

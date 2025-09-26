@@ -21,7 +21,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->fetch();
 
                 if (password_verify($password, $hashed_password)) {
-                    // Password is correct, start the session
+                    // La password è corretta. Rigenera l'ID di sessione per prevenire il session fixation.
+                    session_regenerate_id(true);
+
+                    // Imposta le variabili di sessione
                     $_SESSION['loggedin'] = true;
                     $_SESSION['id'] = $id;
                     $_SESSION['name'] = $name;

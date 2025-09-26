@@ -1,6 +1,6 @@
 <?php
 include 'php/config.php';
-// Note: admin_nav.php handles the session check and authorization.
+include 'php/admin_security.php';
 
 $receiver_id = isset($_GET['user_id']) ? filter_var($_GET['user_id'], FILTER_VALIDATE_INT) : null;
 if (!$receiver_id) {

@@ -1,11 +1,6 @@
 <?php
 include 'php/config.php';
-
-// If the user is not logged in, redirect to the login page
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-    header('Location: login.php');
-    exit;
-}
+include 'php/customer_security.php';
 
 // Fetch user data from the database
 $stmt = $conn->prepare("SELECT name, email, phone, profile_image_path FROM users WHERE id = ?");

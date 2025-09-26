@@ -1,10 +1,3 @@
-<?php
-// Ensure user is logged in and is an admin
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || $_SESSION['role'] !== 'admin') {
-    header('Location: login.php');
-    exit;
-}
-?>
 <div class="flex flex-col gap-4 p-4 bg-[#192233] w-72">
     <div class="flex items-center gap-3 px-2">
         <a href="home.php" class="flex items-center gap-3">

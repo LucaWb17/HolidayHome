@@ -1,6 +1,6 @@
 <?php
 include 'php/config.php';
-// Note: admin_nav.php handles the session check and authorization.
+include 'php/admin_security.php';
 
 // Fetch all users to populate the dropdown
 $users_result = $conn->query("SELECT id, name, email FROM users WHERE role = 'user'");

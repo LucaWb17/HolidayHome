@@ -63,8 +63,18 @@ CREATE TABLE `messages` (
   CONSTRAINT `messages_ibfk_2` FOREIGN KEY (`receiver_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Create the login_attempts table for brute-force protection
+CREATE TABLE `login_attempts` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ip_address` varchar(45) NOT NULL,
+  `attempt_time` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `ip_address` (`ip_address`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Set auto-increment start values
 ALTER TABLE `users` AUTO_INCREMENT = 3;
 ALTER TABLE `bookings` AUTO_INCREMENT = 1;
 ALTER TABLE `discounts` AUTO_INCREMENT = 1;
 ALTER TABLE `messages` AUTO_INCREMENT = 1;
+ALTER TABLE `login_attempts` AUTO_INCREMENT = 1;

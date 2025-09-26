@@ -211,6 +211,7 @@ include 'php/header.php';
                     <div>
                         <label for="new_password" class="block text-sm font-medium text-white">Nuova Password</label>
                         <input type="password" name="new_password" id="new_password" required class="mt-1 block w-full rounded-md border-gray-300 bg-white/20 text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
+                        <p class="mt-2 text-xs text-gray-300">La password deve contenere almeno: 12 caratteri, una lettera maiuscola, una minuscola, un numero e un carattere speciale.</p>
                     </div>
                     <div>
                         <label for="confirm_password" class="block text-sm font-medium text-white">Conferma Nuova Password</label>

@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once 'security_logger.php';
 
 // Verifica il token CSRF prima di procedere
 verify_csrf_token();
@@ -25,9 +26,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $response['message'] = 'Please fill in all password fields.';
         } elseif ($new_password !== $confirm_password) {
             $response['message'] = 'New password and confirmation do not match.';
-        } elseif (strlen($new_password) < 6) {
-            $response['message'] = 'New password must be at least 6 characters long.';
         } else {
+            // --- Rafforzamento Politica Password ---
+            $password_err = '';
+            if (strlen($new_password) < 12) {
+                $password_err = 'La nuova password deve essere lunga almeno 12 caratteri.';
+            } elseif (!preg_match('/[A-Z]/', $new_password)) {
+                $password_err = 'La nuova password deve contenere almeno una lettera maiuscola.';
+            } elseif (!preg_match('/[a-z]/', $new_password)) {
+                $password_err = 'La nuova password deve contenere almeno una lettera minuscola.';
+            } elseif (!preg_match('/[0-9]/', $new_password)) {
+                $password_err = 'La nuova password deve contenere almeno un numero.';
+            } elseif (!preg_match('/[\W_]/', $new_password)) { // \W corrisponde a qualsiasi carattere non alfanumerico
+                $password_err = 'La nuova password deve contenere almeno un carattere speciale.';
+            }
+
+            if (!empty($password_err)) {
+                $response['message'] = $password_err;
+                header('Content-Type: application/json');
+                echo json_encode($response);
+                exit;
+            }
+            // --- Fine Rafforzamento ---
+
             // Fetch the current hashed password from the database
             $stmt = $conn->prepare("SELECT password FROM users WHERE id = ?");
             $stmt->bind_param("i", $user_id);
@@ -46,6 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $update_stmt->bind_param("si", $new_hashed_password, $user_id);
 
                 if ($update_stmt->execute()) {
+                    log_security_event("Password cambiata con successo per l'utente ID: " . $user_id);
                     $response['status'] = 'success';
                     $response['message'] = 'Password changed successfully!';
                 } else {

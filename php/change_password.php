@@ -38,8 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Verify the current password
             if (password_verify($current_password, $hashed_password)) {
-                // Hash the new password
-                $new_hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+                // Hash the new password using the most secure algorithm
+                $new_hashed_password = password_hash($new_password, PASSWORD_ARGON2ID);
 
                 // Update the password in the database
                 $update_stmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");

@@ -33,6 +33,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['name'] = $name;
                     $_SESSION['role'] = $role;
 
+                    // Controlla se la password necessita di essere ri-hashata con l'algoritmo più recente
+                    if (password_needs_rehash($hashed_password, PASSWORD_ARGON2ID)) {
+                        $new_hash = password_hash($password, PASSWORD_ARGON2ID);
+                        $rehash_stmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
+                        $rehash_stmt->bind_param("si", $new_hash, $id);
+                        $rehash_stmt->execute();
+                        $rehash_stmt->close();
+                    }
+
                     $response['status'] = 'success';
                     $response['message'] = 'Login successful!';
                     $response['role'] = $role; // Send role to redirect accordingly

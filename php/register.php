@@ -27,8 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($stmt->num_rows > 0) {
                 $response['message'] = 'Email already registered.';
             } else {
-                // Hash the password
-                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+                // Hash the password using the most secure algorithm currently available
+                $hashed_password = password_hash($password, PASSWORD_ARGON2ID);
 
                 // Insert the new user
                 $stmt = $conn->prepare("INSERT INTO users (name, email, password, phone) VALUES (?, ?, ?, ?)");

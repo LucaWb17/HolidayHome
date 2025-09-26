@@ -112,28 +112,48 @@ include 'php/header.php';
         <!-- My Messages Section -->
         <div class="mt-16">
             <div class="bg-black/20 p-8 rounded-xl backdrop-blur-sm">
-                <h3 class="text-4xl font-bold mb-8 font-serif">I Miei Messaggi</h3>
-                <div class="space-y-4 max-h-[500px] overflow-y-auto">
+                <div class="flex items-center gap-4 mb-8">
+                    <h3 class="text-4xl font-bold font-serif">I Miei Messaggi</h3>
                     <?php
                         $user_id = $_SESSION['id'];
 
-                        // Mark all user's messages as read
-                        $update_stmt = $conn->prepare("UPDATE messages SET is_read = 1 WHERE receiver_id = ?");
-                        $update_stmt->bind_param("i", $user_id);
-                        $update_stmt->execute();
-                        $update_stmt->close();
+                        // 1. First, get the count of unread messages
+                        $unread_stmt = $conn->prepare("SELECT COUNT(id) as unread_count FROM messages WHERE receiver_id = ? AND is_read = 0");
+                        $unread_stmt->bind_param("i", $user_id);
+                        $unread_stmt->execute();
+                        $unread_result = $unread_stmt->get_result();
+                        $unread_data = $unread_result->fetch_assoc();
+                        $unread_count = (int)$unread_data['unread_count'];
+                        $unread_stmt->close();
 
-                        // Fetch all messages for the user
-                        $messages_stmt = $conn->prepare("SELECT * FROM messages WHERE receiver_id = ? ORDER BY timestamp DESC");
+                        if ($unread_count > 0):
+                    ?>
+                        <span class="h-6 w-6 flex items-center justify-center rounded-full bg-red-500 text-sm font-bold text-white"><?php echo $unread_count; ?></span>
+                    <?php
+                        endif;
+
+                        // 2. Do NOT mark all messages as read automatically anymore.
+                        // This logic is being removed.
+                    ?>
+                </div>
+                <div class="space-y-4 max-h-[500px] overflow-y-auto">
+                    <?php
+                        // 3. Fetch all messages for display, including their read status
+                        $messages_stmt = $conn->prepare("SELECT id, subject, body, timestamp, is_read FROM messages WHERE receiver_id = ? ORDER BY timestamp DESC");
                         $messages_stmt->bind_param("i", $user_id);
                         $messages_stmt->execute();
                         $messages_result = $messages_stmt->get_result();
                         if ($messages_result->num_rows > 0):
                             while($msg = $messages_result->fetch_assoc()):
                     ?>
-                                <div id="message-<?php echo $msg['id']; ?>" class="p-4 rounded-lg bg-[#111722]">
+                                <div id="message-<?php echo $msg['id']; ?>" class="message-item p-4 rounded-lg bg-[#111722] <?php echo ($msg['is_read'] == 0) ? 'border-l-4 border-[var(--c-gold)]' : ''; ?>" data-message-id="<?php echo $msg['id']; ?>">
                                     <div class="flex justify-between items-center mb-2">
-                                        <p class="font-bold text-white"><?php echo htmlspecialchars($msg['subject']); ?></p>
+                                        <div class="flex items-center gap-3">
+                                            <?php if ($msg['is_read'] == 0): ?>
+                                                <span class="unread-indicator h-2 w-2 rounded-full bg-[var(--c-gold-bright)]"></span>
+                                            <?php endif; ?>
+                                            <p class="font-bold text-white"><?php echo htmlspecialchars($msg['subject']); ?></p>
+                                        </div>
                                         <div class="flex items-center">
                                             <span class="text-xs text-gray-400 mr-4"><?php echo date("d/m/Y H:i", strtotime($msg['timestamp'])); ?></span>
                                             <button onclick="deleteMessage(<?php echo $msg['id']; ?>)" class="text-red-500 hover:text-red-400">
@@ -141,7 +161,7 @@ include 'php/header.php';
                                             </button>
                                         </div>
                                     </div>
-                                    <p class="text-gray-300"><?php echo nl2br(htmlspecialchars($msg['body'])); ?></p>
+                                    <p class="text-gray-300 pl-5"><?php echo nl2br(htmlspecialchars($msg['body'])); ?></p>
                                 </div>
                             <?php
                             endwhile;
@@ -350,6 +370,58 @@ document.getElementById('update-profile-form').addEventListener('submit', functi
         messageDiv.className = 'text-center mb-4 text-red-400';
         messageDiv.textContent = 'An error occurred. Please try again.';
         console.error('Error:', error);
+    });
+});
+
+
+// --- Click-to-Read Message Logic ---
+document.addEventListener('DOMContentLoaded', function() {
+    const messageItems = document.querySelectorAll('.message-item');
+    const mainNotificationBadge = document.querySelector('.flex.items-center.gap-4.mb-8 .bg-red-500');
+
+    messageItems.forEach(item => {
+        const messageId = item.dataset.messageId;
+        const indicator = item.querySelector('.unread-indicator');
+
+        // Only add a click listener if the message is unread
+        if (indicator) {
+            item.style.cursor = 'pointer'; // Make it look clickable
+            item.addEventListener('click', function markAsRead() {
+                const formData = new FormData();
+                formData.append('message_id', messageId);
+
+                fetch('php/mark_message_read.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Remove visual indicators
+                        indicator.remove();
+                        item.classList.remove('border-l-4', 'border-[var(--c-gold)]');
+                        item.style.cursor = 'default'; // Reset cursor
+
+                        // Update main notification badge
+                        if (mainNotificationBadge) {
+                            let currentCount = parseInt(mainNotificationBadge.textContent, 10);
+                            currentCount--;
+                            mainNotificationBadge.textContent = currentCount;
+                            if (currentCount <= 0) {
+                                mainNotificationBadge.remove();
+                            }
+                        }
+
+                        // Remove the event listener to prevent re-triggering
+                        item.removeEventListener('click', markAsRead);
+                    } else {
+                        // Optional: handle error, e.g., show a message
+                        console.error('Failed to mark message as read:', data.message);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }, { once: true }); // Use { once: true } to automatically remove the listener after it's been called
+        }
     });
 });
 

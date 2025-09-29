@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once 'email_handler.php'; // Includi il gestore delle email
 
 // Verifica il token CSRF prima di procedere
 verify_csrf_token();
@@ -41,6 +42,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->bind_param("isssssis", $user_id, $name, $email, $phone, $check_in, $check_out, $guests, $status);
 
                 if ($stmt->execute()) {
+                    // Invia le email di conferma
+                    send_booking_emails($email, $name, $check_in, $check_out, $guests);
+
                     $response['status'] = 'success';
                     $response['message'] = 'Booking request sent successfully! We will contact you soon to confirm.';
                 } else {

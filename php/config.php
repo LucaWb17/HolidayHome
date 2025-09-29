@@ -16,6 +16,9 @@ define('DB_USERNAME', 'root');
 define('DB_PASSWORD', '');
 define('DB_NAME', 'villa_paradiso');
 
+// Configurazione dell'applicazione
+define('ADMIN_EMAIL', 'admin@example.com'); // Inserisci qui l'email dell'amministratore
+
 // Imposta la modalità di report degli errori di MySQLi per lanciare eccezioni
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 

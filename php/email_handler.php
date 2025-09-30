@@ -54,4 +54,33 @@ function send_booking_emails($customer_email, $customer_name, $check_in, $check_
 
     mail(ADMIN_EMAIL, $admin_subject, $admin_message, $admin_headers);
 }
+
+function send_password_reset_email($user_email, $reset_link) {
+    $subject = 'Richiesta di Reset Password - Villa Paradiso';
+    $message = "
+        <html>
+        <head>
+            <title>Reset della tua Password</title>
+        </head>
+        <body>
+            <p>Ciao,</p>
+            <p>Abbiamo ricevuto una richiesta di reset della password per il tuo account.</p>
+            <p>Clicca sul link qui sotto per scegliere una nuova password. Il link scadrà tra un'ora.</p>
+            <p><a href='" . htmlspecialchars($reset_link) . "'>Reimposta la tua password</a></p>
+            <p>Se non hai richiesto tu il reset, puoi tranquillamente ignorare questa email.</p>
+            <p>Grazie,<br>Il team di Villa Paradiso</p>
+        </body>
+        </html>
+    ";
+
+    $headers = "MIME-Version: 1.0" . "\r\n";
+    $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+    $headers .= "From: no-reply@villaparadiso.com" . "\r\n"; // Usa un indirizzo no-reply
+
+    // Invia l'email
+    if (!mail($user_email, $subject, $message, $headers)) {
+        // Lancia un'eccezione se l'invio fallisce, che può essere catturata nel chiamante
+        throw new Exception("La funzione mail() ha restituito false.");
+    }
+}
 ?>

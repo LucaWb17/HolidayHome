@@ -48,6 +48,9 @@
                     <label for="password" class="block text-sm font-medium text-white">Password</label>
                     <input type="password" name="password" id="password" required class="mt-1 block w-full rounded-md border-gray-300 bg-white/20 text-white shadow-sm focus:border-[var(--c-gold)] focus:ring focus:ring-[var(--c-gold)] focus:ring-opacity-50">
                 </div>
+                <div class="text-right">
+                    <a href="forgot_password.php" class="text-sm text-[var(--c-gold-bright)] hover:text-[var(--c-gold)]">Password dimenticata?</a>
+                </div>
                 <div>
                     <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-full shadow-sm text-sm font-bold text-black bg-[var(--c-gold-bright)] hover:bg-[var(--c-gold)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--c-gold)] transition-all">
                         Accedi

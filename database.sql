@@ -7,6 +7,8 @@ CREATE TABLE `users` (
   `phone` varchar(20) DEFAULT NULL,
   `profile_image_path` varchar(255) DEFAULT 'uploads/avatars/default.png',
   `role` enum('user','admin') NOT NULL DEFAULT 'user',
+  `password_reset_token` varchar(255) DEFAULT NULL,
+  `password_reset_expires` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
